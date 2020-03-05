@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 title: "Covid-19 Italy"
 author: "Alessio Passalacqua"
 output: 
@@ -6,12 +7,20 @@ output:
     orientation: columns
     social: menu
     source_code: embed
+=======
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+>>>>>>> 77ddc691c5339f6af2f47a4079f38c80760acae9
 ---
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
 ```
 
+<<<<<<< HEAD
 Sidebar {.sidebar}
 =======================================================================
 
@@ -66,16 +75,33 @@ Column {data-width=600}
 -----------------------------------------------------------------------
 
 
+=======
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+>>>>>>> 77ddc691c5339f6af2f47a4079f38c80760acae9
 ### Chart B
 
 ```{r}
 
 ```
 
+<<<<<<< HEAD
 
 Column {width=300}
 -----------------------------------------------------------------------
 
+=======
+>>>>>>> 77ddc691c5339f6af2f47a4079f38c80760acae9
 ### Chart C
 
 ```{r}
@@ -83,6 +109,7 @@ Column {width=300}
 ```
 
 
+<<<<<<< HEAD
 
 
 Column {width=400}
@@ -105,3 +132,5 @@ Row {data-height=1200}
 
 ```
 
+=======
+>>>>>>> 77ddc691c5339f6af2f47a4079f38c80760acae9

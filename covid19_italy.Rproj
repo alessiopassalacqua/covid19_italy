@@ -13,5 +13,8 @@ RnwWeave: Sweave
 LaTeX: pdfLaTeX
 
 StripTrailingWhitespace: Yes
+<<<<<<< HEAD
 
 BuildType: Website
+=======
+>>>>>>> 77ddc691c5339f6af2f47a4079f38c80760acae9
