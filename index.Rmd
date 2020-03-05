@@ -1,9 +1,9 @@
 ---
 title: "Covid-19 Italy"
-author: "Alessio Passalacqua"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
+    orientation: rows
+    vertical_layout: fill
     social: menu
     source_code: embed
 ---
@@ -12,8 +12,6 @@ output:
 library(flexdashboard)
 ```
 
-Sidebar {.sidebar}
-=======================================================================
 
 
 ```{r global, include=FALSE}
@@ -25,6 +23,10 @@ library(stringr)
 library(viridisLite)
 library(forecast)
 library(DT)
+library(magrittr)
+library(dygraphs)
+
+library(xts)
 ```
 
 
@@ -37,13 +39,266 @@ thm <-
       style = list(fontFamily = "Source Sans Pro")),
     xAxis = list( gridLineWidth = 1)
   )
-
-# map_ita <- readRDS("map_ita_json.RDS")
 ```
+
+```{r}
+covid_italy <- read.csv("https://raw.githubusercontent.com/ondata/covid19italia/master/publication/riepilogoArchivio.csv")
+
+covid_italy %<>%
+  mutate(datetime = ymd(datetime),
+         Regione = as.character(.$Regione)) 
+
+covid_italy %<>%
+  mutate(Regione = ifelse(.$Regione == "Trento","Trentino-Alto Adige",.$Regione))%>%
+  mutate( Regione = ifelse(.$Regione == "Bolzano","Trentino-Alto Adige",.$Regione)) %>%
+  group_by(Regione,datetime) %>%
+  summarize_all(~sum(.)) %>%
+  ungroup(Regione) %>%
+  arrange(desc(datetime),desc(CASI.TOTALI))
+
+
+first_day <- max(covid_italy$datetime)
+
+covid_italy_map <- 
+  covid_italy %>%
+
+  select("Regione","Totale.attualmente.positivi")
+
+covid_italy_sum <-
+  covid_italy %>% 
+  filter(datetime == first_day) %>%
+  select(-Regione) %>% 
+  group_by(datetime) %>%
+  summarize_all(~sum(.,na.rm=T))
+
+covid_italy_sum_day <-
+  covid_italy %>% 
+  ungroup(Regione) %>%
+  select(-Regione) %>% 
+  group_by(datetime) %>%
+  summarize_all(~sum(.,na.rm=T))
+
+positivi <- xts(covid_italy_sum_day$Totale.attualmente.positivi, covid_italy_sum_day$datetime)
+
+deceduti <- xts(covid_italy_sum_day$DECEDUTI, covid_italy_sum_day$datetime)
+
+dimessi <- xts(covid_italy_sum_day$DIMESSI.GUARITI, covid_italy_sum_day$datetime)
+
+totali <- xts(covid_italy_sum_day$CASI.TOTALI, covid_italy_sum_day$datetime)
+
+covid_italy_time <- merge.xts(totali,positivi,dimessi,deceduti)
+```
+
+
+
+```{r}
+map_ita <- readRDS("map_ita_json.RDS")
+
+region_list <- c("Piemonte","Valle d'Aosta","Lombardia","Trentino-Alto Adige","Veneto",
+  "Friuli V.G.","Liguria","Emilia Romagna","Toscana","Umbria","Marche","Lazio",
+  "Abruzzo","Molise","Campania","Puglia","Basilicata",
+  "Calabria","Sicilia","Sardegna")
+
+for(i in 1:20){
+  map_ita[["features"]][[i]][["properties"]][["name"]] <- region_list[i]
+#  cat(map_ita[["features"]][[i]][["properties"]][["name"]],"\n")
+}
+
+
+confirmed_color <- "purple"
+active_color <- "#1f77b4"
+recovered_color <- "forestgreen"
+death_color <- "red"
+
+```
+
+
+
+Dashboard
+=======================================================================
+
+Row {data-height=200}
+-------------------------------------
+
+### confirmed {.value-box}
+
+```{r}
+tot <- covid_italy_sum_day %>%
+  filter(datetime == max(datetime)) %>%
+  select(CASI.TOTALI ) %>%
+  pull
+  
+tot_1 <- covid_italy_sum_day %>%
+  filter(datetime == max(datetime)-1) %>%
+  select(CASI.TOTALI ) %>%
+  pull
+
+
+  
+valueBox(value = paste(tot, "", "(+",
+                       round(100 * (tot-tot_1)/tot_1 , 1), 
+                       ")",
+                       sep = ""), 
+         
+         caption = "Casi Totali", 
+         icon = "fas fa-user-md", 
+         color = confirmed_color)
+```
+
+### active {.value-box}
+
+```{r}
+pos <- 
+  covid_italy_sum_day %>%
+  filter(datetime == max(datetime)) %>%
+  select(Totale.attualmente.positivi ) %>%
+  pull
+  
+pos_1 <- 
+  covid_italy_sum_day %>%
+  filter(datetime == max(datetime)-1) %>%
+  select(Totale.attualmente.positivi ) %>%
+  pull
+
+
+valueBox(value = paste(as.character(pos), " (+", 
+                       round(100 * (pos-pos_1)/pos_1 , 1), 
+                       "%)", sep = ""), 
+         caption = "Attualmente Positivi", icon = "fas fa-ambulance", 
+         color = active_color)
+```
+
+### recovered {.value-box}
+
+```{r}
+
+
+rec <- 
+  covid_italy_sum_day %>%
+  filter(datetime == max(datetime)) %>%
+  select(DIMESSI.GUARITI ) %>%
+  pull
+
+rec_1 <-
+  covid_italy_sum_day %>%
+  filter(datetime == max(datetime) - 1) %>%
+  select(DIMESSI.GUARITI ) %>%
+  pull
+
+
+valueBox(value = paste(format(rec, big.mark = ","), " (+",
+                       round(100 * (rec-rec_1) / rec_1, 1), 
+                       "%)", sep = ""), 
+         caption = "Guariti", icon = "fas fa-heartbeat", 
+         color = recovered_color)
+```
+
+### death {.value-box}
+
+```{r}
+death <- 
+  covid_italy_sum_day %>%
+  filter(datetime == max(datetime)) %>%
+  select(DECEDUTI) %>%
+  pull
+  
+death_1 <- 
+  covid_italy_sum_day %>%
+  filter(datetime == max(datetime)-1) %>%
+  select(DECEDUTI) %>%
+  pull
+
+
+  
+valueBox(value = paste(death, " (+",
+                       round(100 * (death-death_1) / death_1, 1), 
+                       "%)", sep = ""),
+         caption = "Deceduti", 
+         icon = "fas fa-heart-broken", 
+         color = death_color)
+```
+
+
+
+
+Row {data-height=1000}
+-----------------------------------------------------------------------
+
+### MAPPA  {data-width=500}
+
+```{r}
+
+n <- 4
+stops <- data.frame(q = 0:n/n,
+                    c = substring(viridis(n + 1), 0, 7)[(n+1):1],
+                    stringsAsFactors = FALSE)
+stops <- list_parse2(stops)
+
+
+
+highchart(type = "map") %>% 
+  hc_add_series_map(map = map_ita, 
+                    df = covid_italy_map, 
+                    joinBy = c("name","Regione"), 
+                    value = "Totale.attualmente.positivi",
+                    name="Totale Positivi") %>%
+hc_colorAxis(stops= stops,min=min(covid_italy_map$Totale.attualmente.positivi)) %>%
+hc_legend(valueDecimals = 0, valueSuffix = "%") %>%
+  hc_mapNavigation(enabled = TRUE) %>%
+  hc_add_theme(thm)
+
+```
+
+
+
+### Chart C  {data-width=700}
+
+```{r}
+dygraph(covid_italy_time) %>%
+  dyRangeSelector() 
+```
+
+
+
+
+
+
+
+
+
+Download Data
+=======================================================================
+
+Row {data-height=1200}
+-------------------------------------
+
+```{r}
+datatable(
+  covid_italy, 
+  extensions = 'Buttons', 
+    options = list(
+    pageLength = 24,
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+  ))
+```
+
+About
+=======================================================================
+
+** Dashboard di Coronavirus **
+
+Questa dashboard di Coronavirus offre una panoramica dell'epidemia di Coronavirus COVID-19 (2019-nCoV) del 2019. Questa dashboard è costruita con R utilizzando il framework Rmakrdown e può essere facilmente riprodotta da altri. Il codice può essere reperito presso la repository di github presso il seguente [link] (https://github.com/alessiopassalacqua/covid19_italy)
+
+**Data**
+
+I dati di input per questo dashboard sono scaricati dalla repository di OnData  [covid19italia](https://github.com/ondata/covid19italia) e provengono dai dati di riepilogo nazionale scaricati dal [sito della protezione civile](http://www.protezionecivile.gov.it/attivita-rischi/rischio-sanitario/emergenze/coronavirus/)
+
+
 
 &nbsp;
 <hr />
-<p style="text-align: center;">by <a href="https://www.linkedin.com/in/alessiopassalacqua/">Alessio Passalacqua</a></p>
+<p style="text-align: center;">by <a href="https://alessiopassalacqua.github.io/r-data-training/index.html">Alessio Passalacqua</a></p>
 <p style="text-align: center;"><span style="color: #808080;"><em>alessio.passalacqua@gmail.com</em></span></p>
 
 <!-- Add icon library -->
@@ -57,51 +312,4 @@ thm <-
 </p>
 
 &nbsp;
-
-
-Dashboard
-=======================================================================
-
-Column {data-width=600}
------------------------------------------------------------------------
-
-
-### Chart B
-
-```{r}
-
-```
-
-
-Column {width=300}
------------------------------------------------------------------------
-
-### Chart C
-
-```{r}
-
-```
-
-
-
-
-Column {width=400}
------------------------------------------------------------------------
-
-### Chart D
-
-```{r}
-
-```
-
-
-Download Data
-=======================================================================
-
-Row {data-height=1200}
--------------------------------------
-
-```{r}
-
-```
 
