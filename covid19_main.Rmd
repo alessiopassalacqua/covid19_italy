@@ -1,0 +1,27 @@
+---
+title: "Visualizzazione con ggplot"
+author: "[Alessio Passalacqua](https://alessiopassalacqua.updog.co/)"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    number_sections: false
+    toc: true
+    theme: cosmo
+    toc_float: true
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+covid_italy <- read.csv("https://raw.githubusercontent.com/ondata/covid19italia/master/publication/riepilogoArchivio.csv")
+```
+
+
+
+
