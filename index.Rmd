@@ -43,7 +43,7 @@ thm <-
 
 &nbsp;
 <hr />
-<p style="text-align: center;">by <a href="https://alessiopassalacqua.updog.co/">Alessio Passalacqua</a></p>
+<p style="text-align: center;">by <a href="https://www.linkedin.com/in/alessiopassalacqua/">Alessio Passalacqua</a></p>
 <p style="text-align: center;"><span style="color: #808080;"><em>alessio.passalacqua@gmail.com</em></span></p>
 
 <!-- Add icon library -->
