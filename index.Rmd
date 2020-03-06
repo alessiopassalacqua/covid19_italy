@@ -224,7 +224,7 @@ valueBox(value = paste(death, " (+",
 Row {data-height=1000}
 -----------------------------------------------------------------------
 
-### MAPPA  {data-width=500}
+### Mappa contagi  {data-width=500}
 
 ```{r}
 
@@ -251,7 +251,7 @@ hc_legend(valueDecimals = 0, valueSuffix = "%") %>%
 
 
 
-### Chart C  {data-width=700}
+### Cronologia contagi {data-width=700}
 
 ```{r}
 dygraph(covid_italy_time) %>%
