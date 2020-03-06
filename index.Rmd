@@ -312,4 +312,3 @@ Il codice può essere reperito presso la repository di github al seguente [link]
 </p>
 
 &nbsp;
-
