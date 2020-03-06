@@ -293,7 +293,7 @@ Questa dashboard sul Coronavirus offre una panoramica dell'epidemia di Coronavir
 
 I dati di input sono scaricati dalla repository di  [covid19italia](https://github.com/ondata/covid19italia) e la dashboard sarà aggiornata verso le 20:00 di ogni sera.
 
-Il codice può essere reperito presso la repository di github al seguente [link] (https://github.com/alessiopassalacqua/covid19_italy)
+Il codice può essere reperito presso la repository di github al seguente [link](https://github.com/alessiopassalacqua/covid19_italy)
 
 
 &nbsp;
