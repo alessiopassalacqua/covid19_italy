@@ -1,0 +1,113 @@
+---
+title: "COVID 19"
+author: "[Alessio Passalacqua](https://alessiopassalacqua.updog.co/)"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    number_sections: false
+    toc: true
+    theme: cosmo
+    toc_float: true
+---
+
+
+Alcuni siti
+
+[coravirus dashboard](https://ramikrispin.github.io/coronavirus_dashboard/#trends)
+
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(highcharter)
+library(lubridate)
+library(viridisLite)
+#devtools::install_github("RamiKrispin/coronavirus")
+# library(coronavirus)
+coronavirus <- read.csv("https://raw.githubusercontent.com/RamiKrispin/coronavirus-csv/master/coronavirus_dataset.csv")
+```
+
+```{r global}
+covid_italy <- read.csv("https://raw.githubusercontent.com/ondata/covid19italia/master/publication/riepilogoArchivio.csv")
+
+thm <- 
+  hc_theme(
+    colors = c("#1a6ecc", "#434348", "#90ed7d"),
+    chart = list(
+      backgroundColor = "transparent",
+      style = list(fontFamily = "Source Sans Pro")),
+    xAxis = list( gridLineWidth = 1)
+  )
+
+map_ita <- readRDS("map_ita_json.RDS")
+```
+
+
+```{r}
+covid_italy %<>%
+  mutate(datetime = ymd(datetime),
+         Regione = as.character(.$Regione)) 
+
+covid_italy %<>%
+  mutate(Regione = ifelse(.$Regione == "Trento","Trentino-Alto Adige",.$Regione))%>%
+  mutate( Regione = ifelse(.$Regione == "Bolzano","Trentino-Alto Adige",.$Regione)) %>%
+  group_by(Regione,datetime) %>%
+  summarize_all(~sum(.))
+
+region_list <- c("Piemonte","Valle d'Aosta","Lombardia","Trentino-Alto Adige","Veneto",
+  "Friuli V.G.","Liguria","Emilia Romagna","Toscana","Umbria","Marche","Lazio",
+  "Abruzzo","Molise","Campania","Puglia","Basilicata",
+  "Calabria","Sicilia","Sardegna")
+
+
+ for(i in 1:20){
+  map_ita[["features"]][[i]][["properties"]][["name"]] <- region_list[i]
+#  cat(map_ita[["features"]][[i]][["properties"]][["name"]],"\n")
+}
+  
+
+
+```
+
+
+
+```{r}
+
+
+
+n <- 4
+stops <- data.frame(q = 0:n/n,
+                    c = substring(viridis(n + 1), 0, 7)[(n+1):1],
+                    stringsAsFactors = FALSE)
+stops <- list_parse2(stops)
+
+
+covid_italy_map <-
+covid_italy %>%
+  filter(datetime == ymd("2020-03-04")) %>%
+  select("Regione","Totale.attualmente.positivi")
+
+highchart(type = "map") %>% 
+  hc_add_series_map(map = map_ita, 
+                    df = covid_italy_map, 
+                    joinBy = c("name","Regione"), 
+                    value = "Totale.attualmente.positivi",
+                    name="Hits") %>%
+hc_colorAxis(stops= stops,min=min(covid_italy_map$Totale.attualmente.positivi)) %>%
+hc_legend(valueDecimals = 0, valueSuffix = "%") %>%
+  hc_mapNavigation(enabled = TRUE) %>%
+  hc_add_theme(thm)
+
+```
+
+
+```{r}
+coronavirus %>%
+  filter(Country.Region == "Italy") %>%
+  mutate(total_day = cumsum(cases))
+```
+

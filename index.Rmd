@@ -46,11 +46,14 @@ covid_italy <- read.csv("https://raw.githubusercontent.com/ondata/covid19italia/
 
 covid_italy %<>%
   mutate(datetime = ymd(datetime),
-         Regione = as.character(.$Regione)) 
+         Regione = as.character(.$Regione)) %>%
+  select(-aggiornamento,-fonte)
 
 covid_italy %<>%
   mutate(Regione = ifelse(.$Regione == "Trento","Trentino-Alto Adige",.$Regione))%>%
   mutate( Regione = ifelse(.$Regione == "Bolzano","Trentino-Alto Adige",.$Regione)) %>%
+  mutate( Regione = ifelse(.$Regione == "Emilia-Romagna","Emilia Romagna",.$Regione)) %>%
+  filter(datetime > ymd("2020-03-01")) %>% 
   group_by(Regione,datetime) %>%
   summarize_all(~sum(.)) %>%
   ungroup(Regione) %>%
@@ -61,15 +64,9 @@ first_day <- max(covid_italy$datetime)
 
 covid_italy_map <- 
   covid_italy %>%
-
+  filter(datetime == first_day) %>%
   select("Regione","Totale.attualmente.positivi")
 
-covid_italy_sum <-
-  covid_italy %>% 
-  filter(datetime == first_day) %>%
-  select(-Regione) %>% 
-  group_by(datetime) %>%
-  summarize_all(~sum(.,na.rm=T))
 
 covid_italy_sum_day <-
   covid_italy %>% 
