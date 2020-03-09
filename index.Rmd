@@ -24,6 +24,7 @@ library(forecast)
 library(DT)
 library(magrittr)
 library(dygraphs)
+library(ggplot2)
 
 library(xts)
 ```
@@ -104,7 +105,7 @@ for(i in 1:20){
 ```
 
 
-Dashboard
+Sommario
 =======================================================================
 
 Row {data-height=200}
@@ -259,6 +260,33 @@ dygraph(covid_italy_time) %>%
   dyRangeSelector() 
 ```
 
+Analisi
+=======================================================================
+
+### Heatmap
+
+```{r}
+# https://gist.github.com/jebyrnes/b05f4ca12a1f791030eb591720d6c70e
+
+cmax <- log10(max(covid_italy$totale_casi))/5
+
+lab_e <- round(10^c(0:5*cmax),0)
+
+
+ggplot(covid_italy,
+       aes(x = data, y = reorder(regione, totale_casi), 
+           fill = log10(totale_casi))) +
+  geom_tile(size = 0.2, colour="white") +
+  scale_fill_viridis_c(option = "A", na.value="white", direction=-1,
+                       breaks = 1:4, 
+                       labels = c(10,100,1000,10000),
+                       guide = guide_colorbar("Total Cases")) +
+  theme_minimal() +
+  xlab("") + ylab("") +
+  ggtitle("Casi totale nel tempo", subtitle = "")+ 
+  theme(plot.title.position = "plot")
+
+```
 
 
 Download Data
@@ -277,6 +305,37 @@ datatable(
     buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
   ))
 ```
+
+Analisi
+=======================================================================
+
+### Heatmap
+
+```{r}
+# https://gist.github.com/jebyrnes/b05f4ca12a1f791030eb591720d6c70e
+
+cmax <- log10(max(covid_italy$totale_casi))/5
+
+lab_e <- round(10^c(0:5*cmax),0)
+
+
+ggplot(covid_italy,
+       aes(x = data, y = reorder(regione, totale_casi), 
+           fill = log10(totale_casi))) +
+  geom_tile(size = 0.2, colour="white") +
+  scale_fill_viridis_c(option = "A", na.value="white", direction=-1,
+                       breaks = 1:4, 
+                       labels = c(10,100,1000,10000),
+                       guide = guide_colorbar("Total Cases")) +
+  theme_minimal() +
+  xlab("") + ylab("") +
+  ggtitle("Casi totale nel tempo", subtitle = "")+ 
+  theme(plot.title.position = "plot")
+
+```
+
+
+
 
 About
 =======================================================================
@@ -306,3 +365,4 @@ Il codice può essere reperito presso la repository di github al seguente [link]
 </p>
 
 &nbsp;
+

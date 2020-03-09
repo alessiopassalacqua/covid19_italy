@@ -18,6 +18,7 @@ library(flexdashboard)
 library(highcharter)
 library(gtrendsR)
 library(lubridate)
+library(ggplot2)
 library(dplyr)
 library(stringr)
 library(viridisLite)
@@ -259,3 +260,32 @@ covid_italy_time <- merge.xts(totali,positivi,dimessi,deceduti)
 dygraph(covid_italy_time) %>%
   dyRangeSelector() 
 ```
+
+
+
+
+### prova
+
+```{r,eval=F}
+# https://www.r-graph-gallery.com/330-bubble-map-with-ggplot2.html
+library(maps)
+map_italy <- map_data("world") %>% filter(region=="Italy")
+
+
+ggplot() +
+  geom_polygon(data = map_italy, aes(x=long, y = lat, group = group),
+               fill="grey", alpha=0.3) +
+  geom_point( data=data, aes(x=long, y=lat, size=pop, color=pop)) +
+  scale_size_continuous(range=c(1,12)) +
+  scale_color_viridis(trans="log") +
+  theme_void() + ylim(50,59) + coord_map()
+```
+
+```{r,eval=F}
+italy <- st_read("./shape/dpc-covid19-ita-aree.shp")
+
+head(italy)
+italy %>%
+  ggplot() + geom_sf()
+```
+
