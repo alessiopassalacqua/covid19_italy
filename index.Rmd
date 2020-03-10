@@ -10,24 +10,24 @@ output:
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
-```
-
-
-```{r global, include=FALSE}
+library(ggplot2)
 library(highcharter)
 library(gtrendsR)
 library(lubridate)
 library(dplyr)
 library(stringr)
 library(viridisLite)
-library(forecast)
 library(DT)
 library(magrittr)
 library(dygraphs)
-library(ggplot2)
-
+library(plotly)
 library(xts)
+library(viridis)
+library(leaflet)
+library(tmap)
 ```
+
+
 
 
 ```{r}
@@ -48,10 +48,16 @@ death_color <- "red"
 
 
 ```{r}
+# covid x regioni
 covid_italy <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv")
 
+# covid nazionale
 covid_italy_sum <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv")
+
+# covid x province
+covid_itpro <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv")
 ```
+
 
 ```{r}
 covid_italy %<>%
@@ -100,9 +106,35 @@ for(i in 1:20){
   map_ita[["features"]][[i]][["properties"]][["name"]] <- region_list[i]
 #  cat(map_ita[["features"]][[i]][["properties"]][["name"]],"\n")
 }
-
-
 ```
+
+
+
+```{r}
+covid_itpro  %<>%
+   mutate(data = date(data)) 
+
+geo_italy <- geojsonio::geojson_read("limits_IT_provinces.geojson", what = "sp")
+pal <- colorNumeric("viridis", NULL)
+
+geo_italy$prov_name <- as.character(geo_italy$prov_name)
+
+geo_italy$prov_name <- ifelse(geo_italy$prov_name == "Valle d'Aosta/VallÃ©e d'Aoste","Aosta",geo_italy$prov_name )
+
+geo_italy$prov_name <- ifelse(geo_italy$prov_name == "Bolzano/Bozen","Bolzano",geo_italy$prov_name )
+
+geo_italy$prov_name <- ifelse(geo_italy$prov_name == "Massa-Carrara","Massa Carrara",geo_italy$prov_name )
+
+
+covid_itpro %<>%
+  filter(denominazione_provincia != "In fase di definizione/aggiornamento") %>%
+  filter(data == today) 
+  
+  
+covid_province <- 
+  sp::merge(geo_italy,covid_itpro,by.x="prov_name", by.y="denominazione_provincia")
+```
+
 
 
 Sommario
@@ -127,7 +159,7 @@ tot_1 <- covid_italy_sum %>%
   
 valueBox(value = paste(tot, "", " (+",
                        round(100 * (tot-tot_1)/tot_1 , 1), 
-                       ")",
+                       "%)",
                        sep = ""), 
          
          caption = "Casi Totali", 
@@ -211,7 +243,7 @@ valueBox(value = paste(death, " (+",
 Row {data-height=1000}
 -----------------------------------------------------------------------
 
-### Mappa contagi  {data-width=500}
+### Mappa Contagi
 
 ```{r}
 
@@ -233,8 +265,9 @@ hc_colorAxis(stops= stops,min=min(covid_italy_map$totale_attualmente_positivi)) 
 hc_legend(valueDecimals = 0, valueSuffix = "%") %>%
   hc_mapNavigation(enabled = TRUE) %>%
   hc_add_theme(thm)
-
 ```
+
+
 
 
 ### Cronologia contagi {data-width=700}
@@ -263,6 +296,18 @@ dygraph(covid_italy_time) %>%
 Analisi
 =======================================================================
 
+### Mappa contagi  
+
+```{r}
+breaks = c(0, 25, 50, 250,500, 1000) 
+map_ita = tm_shape(covid_province) + 
+  tm_polygons(col="totale_casi",breaks=breaks,
+              popup.vars=c("totale casi:"="totale_casi"))
+
+tmap_leaflet(map_ita) 
+
+```
+
 ### Heatmap
 
 ```{r}
@@ -272,20 +317,22 @@ cmax <- log10(max(covid_italy$totale_casi))/5
 
 lab_e <- round(10^c(0:5*cmax),0)
 
+lab_txt <- paste0(covid_italy$regione, ": ", covid_italy$totale_casi)
 
-ggplot(covid_italy,
-       aes(x = data, y = reorder(regione, totale_casi), 
-           fill = log10(totale_casi))) +
+gp <- ggplot(covid_italy,aes(x = data, y = reorder(regione, totale_casi), 
+           fill = log10(totale_casi),
+           text= lab_txt)) +
   geom_tile(size = 0.2, colour="white") +
   scale_fill_viridis_c(option = "A", na.value="white", direction=-1,
                        breaks = 1:4, 
                        labels = c(10,100,1000,10000),
-                       guide = guide_colorbar("Total Cases")) +
-  theme_minimal() +
-  xlab("") + ylab("") +
-  ggtitle("Casi totale nel tempo", subtitle = "")+ 
-  theme(plot.title.position = "plot")
+                       guide = guide_colorbar("Casi Totali")) +
+  scale_x_date(date_breaks = "5 days" , date_labels = "%b-%d")+
+    xlab("") + ylab("") +
+  ggtitle("Casi totale nel tempo", subtitle = "") +
+  theme_bw() 
 
+ggplotly(gp, tooltip = "text")
 ```
 
 
@@ -305,36 +352,6 @@ datatable(
     buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
   ))
 ```
-
-Analisi
-=======================================================================
-
-### Heatmap
-
-```{r}
-# https://gist.github.com/jebyrnes/b05f4ca12a1f791030eb591720d6c70e
-
-cmax <- log10(max(covid_italy$totale_casi))/5
-
-lab_e <- round(10^c(0:5*cmax),0)
-
-
-ggplot(covid_italy,
-       aes(x = data, y = reorder(regione, totale_casi), 
-           fill = log10(totale_casi))) +
-  geom_tile(size = 0.2, colour="white") +
-  scale_fill_viridis_c(option = "A", na.value="white", direction=-1,
-                       breaks = 1:4, 
-                       labels = c(10,100,1000,10000),
-                       guide = guide_colorbar("Total Cases")) +
-  theme_minimal() +
-  xlab("") + ylab("") +
-  ggtitle("Casi totale nel tempo", subtitle = "")+ 
-  theme(plot.title.position = "plot")
-
-```
-
-
 
 
 About

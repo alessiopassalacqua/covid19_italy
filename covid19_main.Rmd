@@ -26,6 +26,8 @@ library(forecast)
 library(DT)
 library(magrittr)
 library(dygraphs)
+library(viridis)
+library(plotly)
 
 library(xts)
 ```
@@ -52,6 +54,11 @@ death_color <- "red"
 covid_italy <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv")
 
 covid_italy_sum <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv")
+
+covid_itpro <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv")
+
+
+
 ```
 
 ```{r}
@@ -75,6 +82,12 @@ covid_italy %<>%
 covid_italy_sum %<>%
    mutate(data = date(data)) 
 ```
+
+```{r}
+covid_itpro  %<>%
+   mutate(data = date(data)) 
+```
+
 
 
 ```{r}
@@ -256,36 +269,63 @@ covid_italy_time <- merge.xts(totali,positivi,dimessi,deceduti)
 ```
 
 
-```{r}
+```{r,eval=F}
 dygraph(covid_italy_time) %>%
   dyRangeSelector() 
 ```
 
 
-
-
-### prova
-
-```{r,eval=F}
-# https://www.r-graph-gallery.com/330-bubble-map-with-ggplot2.html
-library(maps)
-map_italy <- map_data("world") %>% filter(region=="Italy")
-
-
-ggplot() +
-  geom_polygon(data = map_italy, aes(x=long, y = lat, group = group),
-               fill="grey", alpha=0.3) +
-  geom_point( data=data, aes(x=long, y=lat, size=pop, color=pop)) +
-  scale_size_continuous(range=c(1,12)) +
-  scale_color_viridis(trans="log") +
-  theme_void() + ylim(50,59) + coord_map()
+```{r}
+# https://github.com/openpolis/geojson-italy/blob/master/geojson/limits_IT_provinces.geojson
 ```
 
-```{r,eval=F}
-italy <- st_read("./shape/dpc-covid19-ita-aree.shp")
 
-head(italy)
-italy %>%
-  ggplot() + geom_sf()
+```{r}
+library(viridis)
+library(leaflet)
+library(tmap)
+geo_italy <- geojsonio::geojson_read("limits_IT_provinces.geojson", what = "sp")
+pal <- colorNumeric("viridis", NULL)
+
+geo_italy$prov_name <- as.character(geo_italy$prov_name)
+
+geo_italy$prov_name <- ifelse(geo_italy$prov_name == "Valle d'Aosta/VallÃ©e d'Aoste","Aosta",geo_italy$prov_name )
+
+geo_italy$prov_name <- ifelse(geo_italy$prov_name == "Bolzano/Bozen","Bolzano",geo_italy$prov_name )
+
+geo_italy$prov_name <- ifelse(geo_italy$prov_name == "Massa-Carrara","Massa Carrara",geo_italy$prov_name )
+
+today <- max(covid_itpro$data)
+
+covid_itpro %<>%
+  filter(denominazione_provincia != "In fase di definizione/aggiornamento") %>%
+  filter(data == today) 
+  
+  
+covid_province <- 
+  sp::merge(geo_italy,covid_itpro,by.x="prov_name", by.y="denominazione_provincia")
+
+# https://geocompr.robinlovelace.net/
+
+
+
+#geo_italy$prov_name
+```
+
+```{r}
+#covid_itpro$denominazione_provincia
+```
+
+
+
+
+```{r}
+breaks = c(0, 25, 50, 250,500, 1000) 
+map_ita = tm_shape(covid_province) + 
+  tm_polygons(col="totale_casi",breaks=breaks,
+              popup.vars=c("totale casi:"="totale_casi"))
+
+tmap_leaflet(map_ita) 
+
 ```
 
