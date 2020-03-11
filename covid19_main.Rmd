@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r}
-knitr::opts_chunk$set(echo = FALSE, eval = FALSE)
+#knitr::opts_chunk$set(echo = FALSE, eval = FALSE)
 ```
 
 
