@@ -8,6 +8,11 @@ output:
     source_code: embed
 ---
 
+```{r}
+knitr::opts_chunk$set(echo = FALSE, eval = FALSE)
+```
+
+
 ```{r setup, include=FALSE}
 library(flexdashboard)
 ```
@@ -266,6 +271,7 @@ totali <- xts(covid_italy_sum$totale_casi,covid_italy_sum$data)
 
 covid_italy_time <- merge.xts(totali,positivi,dimessi,deceduti)
 
+(totali - lag(totali))/lag(totali)
 ```
 
 
