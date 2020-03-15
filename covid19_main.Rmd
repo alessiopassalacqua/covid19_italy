@@ -33,7 +33,6 @@ library(magrittr)
 library(dygraphs)
 library(viridis)
 library(plotly)
-library(coronavirus)
 library(xts)
 ```
 
@@ -62,7 +61,6 @@ covid_italy_sum <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/
 
 covid_itpro <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province.csv")
 
-data("coronavirus")
 ```
 
 ```{r}
@@ -73,7 +71,7 @@ covid_italy %<>%
           -stato,
           -codice_regione,
           -lat,
-          -long,) %>%
+          -long) %>%
    mutate(regione = ifelse(.$regione == "Trento","Trentino-Alto Adige",.$regione))%>%
   mutate( regione = ifelse(.$regione == "Bolzano","Trentino-Alto Adige",.$regione)) %>%
   group_by(regione,data) %>%
@@ -332,48 +330,7 @@ tmap_leaflet(map_ita)
 
 ```
 
-China
-=======================================================================
-
-### China
-
-```{r}
-coronavirus %>%
-  filter(Country.Region == "Mainland China") %>%
-  group_by(date,type) %>%
-  summarise(cases = sum(cases)) %>%
-  group_by(type) %>%
-  mutate(cases_tot = cumsum(cases)) %>%
-  ggplot(aes(x=date,y=cases_tot,color=type)) + geom_line()
-```
-
-```{r}
-
-coronavirus_china <-  
-  coronavirus %>%
-  filter(Country.Region == "Mainland China") %>%
-  group_by(date,type) %>%
-  summarise(cases = sum(cases)) %>%
-  filter(type == "confirmed") %>%
-  ungroup(date) %>%
-  mutate(cases_tot = cumsum(cases),
-         date = ymd(date)) 
-```
 
 
 
-```{r}
-totali_china <- xts( coronavirus_china$cases_tot ,(coronavirus_china$date + 35)  )
-totali_italy <- totali
-```
-
-
-```{r}
-chinaVsitaly  <- merge.xts(totali_italy, totali_china)
-```
-
-```{r}
-dygraph(chinaVsitaly) %>%
-  dyRangeSelector() 
-```
 
