@@ -207,8 +207,6 @@ xy_fit &lt;-   predict(model,xy,interval = &#39;confidence&#39;) %&gt;%
   data.frame() </code></pre>
 <pre class="r"><code># plot fitting
 
-
-
 ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
   geom_line() +
   geom_point(colour=&quot;blue&quot;,aes(y=xy$y)) +
@@ -232,8 +230,9 @@ ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
    annotate(geom = &quot;segment&quot;, x = 3.5,xend = 4,
            y = 60000,yend=60000, colour=&quot;red&quot;) +
   labs(title = &quot;Crescita contagiati Coronavirus Italia &quot;,
-       subtitle = &quot;Fit logistico&quot;,
-       caption = &quot;Dati Italia: Protezione Civile&quot;,
+       subtitle = &quot;Previsione curva di crescita&quot;,
+       caption = &quot;Dati: Protezione Civile \n
+       #iorestoacasa&quot;,
        x = &quot;Giorni&quot;,
        y = &quot;Totale Positivi&quot;)</code></pre>
 <p><img src="sigmoid_covid19_italy_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
