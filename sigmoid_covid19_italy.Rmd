@@ -41,16 +41,16 @@ model <- drm(y ~ x, fct = L.3(), data = xy[1:gg,])
 ```
 
 
-```{r}
+```{r,warning=F}
 # prediction
-xy_fit <-   predict(model,xy,interval = 'confidence') %>%
-  data.frame() 
+xy_fit <-   
+  predict(model,xy,interval = 'confidence')  %>%
+  as.data.frame()
 ```
 
 
 ```{r}
 # plot fitting
-
 ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
   geom_line() +
   geom_point(colour="blue",aes(y=xy$y)) +
@@ -79,7 +79,6 @@ ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
        #iorestoacasa",
        x = "Giorni",
        y = "Totale Positivi")
-
 
 ```
 

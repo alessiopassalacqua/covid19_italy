@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alessio Passalacqua" />
 
-<meta name="date" content="2020-03-16" />
+<meta name="date" content="2020-03-17" />
 
 <title>Coronavirus Italia: previsione curva di crescita</title>
 
@@ -181,7 +181,7 @@ summary {
 
 <h1 class="title toc-ignore">Coronavirus Italia: previsione curva di crescita</h1>
 <h4 class="author"><a href="https://alessiopassalacqua.updog.co/">Alessio Passalacqua</a></h4>
-<h4 class="date">2020-03-16</h4>
+<h4 class="date">2020-03-17</h4>
 
 </div>
 
@@ -203,10 +203,10 @@ xy &lt;- data.frame(x=x,y=cov_tot)</code></pre>
 <pre class="r"><code># fitting logistico
 model &lt;- drm(y ~ x, fct = L.3(), data = xy[1:gg,])</code></pre>
 <pre class="r"><code># prediction
-xy_fit &lt;-   predict(model,xy,interval = &#39;confidence&#39;) %&gt;%
-  data.frame() </code></pre>
+xy_fit &lt;-   
+  predict(model,xy,interval = &#39;confidence&#39;)  %&gt;%
+  as.data.frame()</code></pre>
 <pre class="r"><code># plot fitting
-
 ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
   geom_line() +
   geom_point(colour=&quot;blue&quot;,aes(y=xy$y)) +

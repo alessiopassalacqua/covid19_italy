@@ -68,8 +68,10 @@ covid_italy %<>%
           -codice_regione,
           -lat,
           -long) %>%
-   mutate(regione = ifelse(.$regione == "Trento","Trentino-Alto Adige",.$regione))%>%
+  mutate(regione = ifelse(.$regione == "Trento","Trentino-Alto Adige",.$regione))%>%
   mutate( regione = ifelse(.$regione == "Bolzano","Trentino-Alto Adige",.$regione)) %>%
+  mutate(regione = ifelse(.$regione == "P.A. Trento","Trentino-Alto Adige",.$regione))%>%
+  mutate( regione = ifelse(.$regione == "P.A. Bolzano","Trentino-Alto Adige",.$regione)) %>%
   group_by(regione,data) %>%
   summarize_all(~sum(.)) %>%
   ungroup(regione) %>%
@@ -97,7 +99,7 @@ map_ita <- readRDS("map_ita_json.RDS")
 
 region_list <- c("Piemonte","Valle d'Aosta","Lombardia",
                  "Trentino-Alto Adige","Veneto",
-                 "Friuli V. G. ","Liguria","Emilia Romagna",
+                 "Friuli Venezia Giulia","Liguria","Emilia Romagna",
                  "Toscana","Umbria","Marche","Lazio",
                  "Abruzzo","Molise","Campania","Puglia","Basilicata",
                  "Calabria","Sicilia","Sardegna")
@@ -114,12 +116,14 @@ for(i in 1:20){
 covid_itpro  %<>%
    mutate(data = date(data)) 
 
+
+
 geo_italy <- geojsonio::geojson_read("limits_IT_provinces.geojson", what = "sp")
 pal <- colorNumeric("viridis", NULL)
 
 geo_italy$prov_name <- as.character(geo_italy$prov_name)
 
-geo_italy$prov_name <- ifelse(geo_italy$prov_name == "Valle d'Aosta/VallÃ©e d'Aoste","Aosta",geo_italy$prov_name )
+geo_italy$prov_name <- ifelse(geo_italy$prov_name == "Valle d'Aosta/Vallée d'Aoste","Aosta",geo_italy$prov_name )
 
 geo_italy$prov_name <- ifelse(geo_italy$prov_name == "Bolzano/Bozen","Bolzano",geo_italy$prov_name )
 
@@ -128,7 +132,11 @@ geo_italy$prov_name <- ifelse(geo_italy$prov_name == "Massa-Carrara","Massa Carr
 
 covid_itpro %<>%
   filter(denominazione_provincia != "In fase di definizione/aggiornamento") %>%
-  filter(data == today) 
+  filter(data == today) %>%
+  mutate(denominazione_provincia = as.character(denominazione_provincia)) %>%
+  mutate(denominazione_provincia = 
+           ifelse( .$denominazione_provincia=="ForlÃ¬-Cesena",
+                   "Forlì-Cesena",.$denominazione_provincia))
   
   
 covid_province <- 
@@ -298,7 +306,7 @@ Analisi
 ### Mappa contagi  
 
 ```{r}
-breaks = c(0, 25, 50, 250,500, 1000, 2000) 
+breaks = c(0, 25, 50, 250,500, 2500, 5000) 
 map_ita = tm_shape(covid_province) + 
   tm_polygons(col="totale_casi",breaks=breaks,
               popup.vars=c("totale casi:"="totale_casi"))
@@ -318,7 +326,8 @@ lab_e <- round(10^c(0:5*cmax),0)
 
 lab_txt <- paste0(covid_italy$regione, ": ", covid_italy$totale_casi)
 
-gp <- ggplot(covid_italy,aes(x = data, y = reorder(regione, totale_casi), 
+#gp <- 
+  ggplot(covid_italy,aes(x = data, y = reorder(regione, totale_casi), 
            fill = log10(totale_casi),
            text= lab_txt)) +
   geom_tile(size = 0.2, colour="white") +
@@ -331,7 +340,7 @@ gp <- ggplot(covid_italy,aes(x = data, y = reorder(regione, totale_casi),
   ggtitle("Casi totale nel tempo", subtitle = "") +
   theme_bw() 
 
-ggplotly(gp, tooltip = "text")
+#ggplotly(gp, tooltip = "text")
 ```
 
 
