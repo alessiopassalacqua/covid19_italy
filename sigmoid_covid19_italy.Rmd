@@ -30,14 +30,14 @@ covid_italy_sum <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/
 x <-  1:50
 cov_tot <-  rep(NA,50)
 gg <-  length(covid_italy_sum$totale_casi) 
-cov_tot[1:gg]    <- covid_italy_sum$totale_casi
+cov_tot[1:(gg-2)]    <- covid_italy_sum$totale_casi[1:(gg-2)]
 xy <- data.frame(x=x,y=cov_tot)
 ```
 
 
 ```{r}
 # fitting logistico
-model <- drm(y ~ x, fct = L.3(), data = xy[1:gg,])
+model <- drm(y ~ x, fct = L.3(), data = xy[1:(gg-2),])
 ```
 
 
@@ -51,14 +51,18 @@ xy_fit <-
 
 ```{r}
 # plot fitting
+nomodel <- rep(NA,50)
+nomodel[(gg-1):gg] <- covid_italy_sum$totale_casi[(gg-1):gg] 
+
 ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
   geom_line() +
   geom_point(colour="blue",aes(y=xy$y)) +
+  geom_point(colour="red",aes(y=nomodel),shape=15,size=2) +
   geom_line(aes(y = Lower), color = "red", linetype = "dashed")+
   geom_line(aes(y = Upper), color = "red", linetype = "dashed")+
 #-- ITALY  
   annotate(geom = "text", x = 5, y = 70000,
-           label = "Italia", hjust = 0) +
+           label = "Training data", hjust = 0) +
   annotate("pointrange", x = 3.5, y = 70000, ymin = 69500,
            ymax = 70500,colour = "blue", size = 0.7)+
 #-- FIT  
@@ -71,14 +75,31 @@ ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
            label = "Intervallo di confidenza 95%", hjust = 0) +
   annotate(geom = "segment", x = 2.5,xend = 3,
            y = 60000,yend=60000, colour="red") +
-   annotate(geom = "segment", x = 3.5,xend = 4,
+  annotate(geom = "segment", x = 3.5,xend = 4,
            y = 60000,yend=60000, colour="red") +
-  labs(title = "Crescita contagiati Coronavirus Italia ",
+#-- Test
+  annotate(geom = "text", x = 5, y = 55000,
+           label = "Test data", hjust = 0) +
+  annotate(geom="rect",xmin=3, xmax=3.6, ymin=54000 , ymax=56000, color="red", fill="red") +
+   geom_label( aes( x=40, y=10000, label="#iorestoacasa"),                 , 
+           color="black", 
+           size=5 , fontface="bold" )+ 
+#-- #iorestoacasa  
+    labs(title = "Crescita contagiati Coronavirus Italia ",
        subtitle = "Previsione curva di crescita",
-       caption = "Dati: Protezione Civile \n
-       #iorestoacasa",
+       caption = "Dati: Protezione Civile",
        x = "Giorni",
        y = "Totale Positivi")
+```
+
+```{r,eval=F,echo=F}
+covid_italy_sum$totale_casi
 
 ```
+
+
+```{r,eval=F,echo=F}
+xy_fit$Prediction
+```
+
 

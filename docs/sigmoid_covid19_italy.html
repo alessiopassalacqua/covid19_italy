@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alessio Passalacqua" />
 
-<meta name="date" content="2020-03-17" />
+<meta name="date" content="2020-03-18" />
 
 <title>Coronavirus Italia: previsione curva di crescita</title>
 
@@ -181,7 +181,7 @@ summary {
 
 <h1 class="title toc-ignore">Coronavirus Italia: previsione curva di crescita</h1>
 <h4 class="author"><a href="https://alessiopassalacqua.updog.co/">Alessio Passalacqua</a></h4>
-<h4 class="date">2020-03-17</h4>
+<h4 class="date">2020-03-18</h4>
 
 </div>
 
@@ -198,23 +198,27 @@ covid_italy_sum &lt;- read.csv(&quot;https://raw.githubusercontent.com/pcm-dpc/C
 <pre class="r"><code>x &lt;-  1:50
 cov_tot &lt;-  rep(NA,50)
 gg &lt;-  length(covid_italy_sum$totale_casi) 
-cov_tot[1:gg]    &lt;- covid_italy_sum$totale_casi
+cov_tot[1:(gg-2)]    &lt;- covid_italy_sum$totale_casi[1:(gg-2)]
 xy &lt;- data.frame(x=x,y=cov_tot)</code></pre>
 <pre class="r"><code># fitting logistico
-model &lt;- drm(y ~ x, fct = L.3(), data = xy[1:gg,])</code></pre>
+model &lt;- drm(y ~ x, fct = L.3(), data = xy[1:(gg-2),])</code></pre>
 <pre class="r"><code># prediction
 xy_fit &lt;-   
   predict(model,xy,interval = &#39;confidence&#39;)  %&gt;%
   as.data.frame()</code></pre>
 <pre class="r"><code># plot fitting
+nomodel &lt;- rep(NA,50)
+nomodel[(gg-1):gg] &lt;- covid_italy_sum$totale_casi[(gg-1):gg] 
+
 ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
   geom_line() +
   geom_point(colour=&quot;blue&quot;,aes(y=xy$y)) +
+  geom_point(colour=&quot;red&quot;,aes(y=nomodel),shape=15,size=2) +
   geom_line(aes(y = Lower), color = &quot;red&quot;, linetype = &quot;dashed&quot;)+
   geom_line(aes(y = Upper), color = &quot;red&quot;, linetype = &quot;dashed&quot;)+
 #-- ITALY  
   annotate(geom = &quot;text&quot;, x = 5, y = 70000,
-           label = &quot;Italia&quot;, hjust = 0) +
+           label = &quot;Training data&quot;, hjust = 0) +
   annotate(&quot;pointrange&quot;, x = 3.5, y = 70000, ymin = 69500,
            ymax = 70500,colour = &quot;blue&quot;, size = 0.7)+
 #-- FIT  
@@ -227,12 +231,19 @@ ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
            label = &quot;Intervallo di confidenza 95%&quot;, hjust = 0) +
   annotate(geom = &quot;segment&quot;, x = 2.5,xend = 3,
            y = 60000,yend=60000, colour=&quot;red&quot;) +
-   annotate(geom = &quot;segment&quot;, x = 3.5,xend = 4,
+  annotate(geom = &quot;segment&quot;, x = 3.5,xend = 4,
            y = 60000,yend=60000, colour=&quot;red&quot;) +
-  labs(title = &quot;Crescita contagiati Coronavirus Italia &quot;,
+#-- Test
+  annotate(geom = &quot;text&quot;, x = 5, y = 55000,
+           label = &quot;Test data&quot;, hjust = 0) +
+  annotate(geom=&quot;rect&quot;,xmin=3, xmax=3.6, ymin=54000 , ymax=56000, color=&quot;red&quot;, fill=&quot;red&quot;) +
+   geom_label( aes( x=40, y=10000, label=&quot;#iorestoacasa&quot;),                 , 
+           color=&quot;black&quot;, 
+           size=5 , fontface=&quot;bold&quot; )+ 
+#-- #iorestoacasa  
+    labs(title = &quot;Crescita contagiati Coronavirus Italia &quot;,
        subtitle = &quot;Previsione curva di crescita&quot;,
-       caption = &quot;Dati: Protezione Civile \n
-       #iorestoacasa&quot;,
+       caption = &quot;Dati: Protezione Civile&quot;,
        x = &quot;Giorni&quot;,
        y = &quot;Totale Positivi&quot;)</code></pre>
 <p><img src="sigmoid_covid19_italy_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
