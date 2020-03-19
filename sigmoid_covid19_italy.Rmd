@@ -1,6 +1,6 @@
 ---
 title: "Coronavirus Italia: previsione curva di crescita"
-author: "[Alessio Passalacqua](https://alessiopassalacqua.updog.co/)"
+author: "Alessio Passalacqua"
 date: "`r Sys.Date()`"
 output: 
   html_document:
@@ -28,16 +28,17 @@ covid_italy_sum <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/
 
 ```{r}
 x <-  1:50
+nn <- 3
 cov_tot <-  rep(NA,50)
 gg <-  length(covid_italy_sum$totale_casi) 
-cov_tot[1:(gg-2)]    <- covid_italy_sum$totale_casi[1:(gg-2)]
+cov_tot[1:(gg-nn)]    <- covid_italy_sum$totale_casi[1:(gg-nn)]
 xy <- data.frame(x=x,y=cov_tot)
 ```
 
 
 ```{r}
 # fitting logistico
-model <- drm(y ~ x, fct = L.3(), data = xy[1:(gg-2),])
+model <- drm(y ~ x, fct = L.3(), data = xy[1:(gg-nn),])
 ```
 
 
@@ -52,7 +53,7 @@ xy_fit <-
 ```{r}
 # plot fitting
 nomodel <- rep(NA,50)
-nomodel[(gg-1):gg] <- covid_italy_sum$totale_casi[(gg-1):gg] 
+nomodel[(gg-nn+1):gg] <- covid_italy_sum$totale_casi[(gg-nn+1):gg] 
 
 ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
   geom_line() +
@@ -99,7 +100,7 @@ covid_italy_sum$totale_casi
 
 
 ```{r,eval=F,echo=F}
-xy_fit$Prediction
+xy_fit[25,]
 ```
 
 

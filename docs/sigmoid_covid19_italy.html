@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alessio Passalacqua" />
 
-<meta name="date" content="2020-03-18" />
+<meta name="date" content="2020-03-19" />
 
 <title>Coronavirus Italia: previsione curva di crescita</title>
 
@@ -180,8 +180,8 @@ summary {
 
 
 <h1 class="title toc-ignore">Coronavirus Italia: previsione curva di crescita</h1>
-<h4 class="author"><a href="https://alessiopassalacqua.updog.co/">Alessio Passalacqua</a></h4>
-<h4 class="date">2020-03-18</h4>
+<h4 class="author">Alessio Passalacqua</h4>
+<h4 class="date">2020-03-19</h4>
 
 </div>
 
@@ -196,19 +196,20 @@ theme_set(theme_bw())
 # get the data
 covid_italy_sum &lt;- read.csv(&quot;https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv&quot;)</code></pre>
 <pre class="r"><code>x &lt;-  1:50
+nn &lt;- 3
 cov_tot &lt;-  rep(NA,50)
 gg &lt;-  length(covid_italy_sum$totale_casi) 
-cov_tot[1:(gg-2)]    &lt;- covid_italy_sum$totale_casi[1:(gg-2)]
+cov_tot[1:(gg-nn)]    &lt;- covid_italy_sum$totale_casi[1:(gg-nn)]
 xy &lt;- data.frame(x=x,y=cov_tot)</code></pre>
 <pre class="r"><code># fitting logistico
-model &lt;- drm(y ~ x, fct = L.3(), data = xy[1:(gg-2),])</code></pre>
+model &lt;- drm(y ~ x, fct = L.3(), data = xy[1:(gg-nn),])</code></pre>
 <pre class="r"><code># prediction
 xy_fit &lt;-   
   predict(model,xy,interval = &#39;confidence&#39;)  %&gt;%
   as.data.frame()</code></pre>
 <pre class="r"><code># plot fitting
 nomodel &lt;- rep(NA,50)
-nomodel[(gg-1):gg] &lt;- covid_italy_sum$totale_casi[(gg-1):gg] 
+nomodel[(gg-nn+1):gg] &lt;- covid_italy_sum$totale_casi[(gg-nn+1):gg] 
 
 ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
   geom_line() +
