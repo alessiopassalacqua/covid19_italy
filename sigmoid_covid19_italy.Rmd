@@ -28,7 +28,7 @@ covid_italy_sum <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/
 
 ```{r}
 x <-  1:50
-nn <- 3
+nn <- 5
 cov_tot <-  rep(NA,50)
 gg <-  length(covid_italy_sum$totale_casi) 
 cov_tot[1:(gg-nn)]    <- covid_italy_sum$totale_casi[1:(gg-nn)]

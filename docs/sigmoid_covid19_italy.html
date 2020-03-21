@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alessio Passalacqua" />
 
-<meta name="date" content="2020-03-19" />
+<meta name="date" content="2020-03-21" />
 
 <title>Coronavirus Italia: previsione curva di crescita</title>
 
@@ -181,7 +181,7 @@ summary {
 
 <h1 class="title toc-ignore">Coronavirus Italia: previsione curva di crescita</h1>
 <h4 class="author">Alessio Passalacqua</h4>
-<h4 class="date">2020-03-19</h4>
+<h4 class="date">2020-03-21</h4>
 
 </div>
 
@@ -196,7 +196,7 @@ theme_set(theme_bw())
 # get the data
 covid_italy_sum &lt;- read.csv(&quot;https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv&quot;)</code></pre>
 <pre class="r"><code>x &lt;-  1:50
-nn &lt;- 3
+nn &lt;- 5
 cov_tot &lt;-  rep(NA,50)
 gg &lt;-  length(covid_italy_sum$totale_casi) 
 cov_tot[1:(gg-nn)]    &lt;- covid_italy_sum$totale_casi[1:(gg-nn)]
