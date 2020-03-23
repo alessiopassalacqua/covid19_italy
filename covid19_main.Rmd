@@ -87,6 +87,7 @@ covid_italy_sum %<>%
 
 ```{r}
 covid_itpro  %<>%
+   mutate (data=ymd_hms(data))%>%
    mutate(data = date(data)) 
 ```
 

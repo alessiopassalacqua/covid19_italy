@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alessio Passalacqua" />
 
-<meta name="date" content="2020-03-21" />
+<meta name="date" content="2020-03-23" />
 
 <title>Coronavirus Italia: previsione curva di crescita</title>
 
@@ -181,7 +181,7 @@ summary {
 
 <h1 class="title toc-ignore">Coronavirus Italia: previsione curva di crescita</h1>
 <h4 class="author">Alessio Passalacqua</h4>
-<h4 class="date">2020-03-21</h4>
+<h4 class="date">2020-03-23</h4>
 
 </div>
 
@@ -190,64 +190,100 @@ summary {
 library(drc)
 library(lubridate)
 library(ggplot2)
+library(scales)
 theme_set(theme_bw())
 
 
 # get the data
 covid_italy_sum &lt;- read.csv(&quot;https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv&quot;)</code></pre>
-<pre class="r"><code>x &lt;-  1:50
-nn &lt;- 5
-cov_tot &lt;-  rep(NA,50)
+<pre class="r"><code>maxrange &lt;- 60
+x &lt;-  1:maxrange
+nn &lt;- 0   # test
+cov_tot &lt;-  rep(NA,maxrange)
 gg &lt;-  length(covid_italy_sum$totale_casi) 
 cov_tot[1:(gg-nn)]    &lt;- covid_italy_sum$totale_casi[1:(gg-nn)]
 xy &lt;- data.frame(x=x,y=cov_tot)</code></pre>
 <pre class="r"><code># fitting logistico
 model &lt;- drm(y ~ x, fct = L.3(), data = xy[1:(gg-nn),])</code></pre>
+<pre class="r"><code>summary(model)</code></pre>
+<pre><code>## 
+## Model fitted: Logistic (ED50 as parameter) with lower limit fixed at 0 (3 parms)
+## 
+## Parameter estimates:
+## 
+##                  Estimate  Std. Error t-value   p-value    
+## b:(Intercept) -1.9423e-01  4.0046e-03 -48.500 &lt; 2.2e-16 ***
+## d:(Intercept)  1.1750e+05  5.3694e+03  21.883 &lt; 2.2e-16 ***
+## e:(Intercept)  2.8039e+01  4.5058e-01  62.228 &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error:
+## 
+##  530.1435 (26 degrees of freedom)</code></pre>
 <pre class="r"><code># prediction
 xy_fit &lt;-   
   predict(model,xy,interval = &#39;confidence&#39;)  %&gt;%
   as.data.frame()</code></pre>
 <pre class="r"><code># plot fitting
-nomodel &lt;- rep(NA,50)
+nomodel &lt;- rep(NA,maxrange)
 nomodel[(gg-nn+1):gg] &lt;- covid_italy_sum$totale_casi[(gg-nn+1):gg] 
 
-ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
+y_text &lt;- 40000
+
+nuovicasi &lt;- rep(NA,maxrange)
+nuovicasi[1:gg] &lt;- (covid_italy_sum$totale_casi - lag( covid_italy_sum$totale_casi ) )*10
+
+ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
   geom_line() +
   geom_point(colour=&quot;blue&quot;,aes(y=xy$y)) +
-  geom_point(colour=&quot;red&quot;,aes(y=nomodel),shape=15,size=2) +
+#  geom_point(colour=&quot;red&quot;,aes(y=nomodel),shape=15,size=2) +
   geom_line(aes(y = Lower), color = &quot;red&quot;, linetype = &quot;dashed&quot;)+
   geom_line(aes(y = Upper), color = &quot;red&quot;, linetype = &quot;dashed&quot;)+
+  geom_line(aes(y = nuovicasi),color = &#39;orange&#39;, alpha = .5) +
+  geom_area(aes(y = nuovicasi),fill = &#39;orange&#39;, alpha = .05) +
 #-- ITALY  
-  annotate(geom = &quot;text&quot;, x = 5, y = 70000,
+  annotate(geom = &quot;text&quot;, x = 5, y = 74000+y_text,
            label = &quot;Training data&quot;, hjust = 0) +
-  annotate(&quot;pointrange&quot;, x = 3.5, y = 70000, ymin = 69500,
-           ymax = 70500,colour = &quot;blue&quot;, size = 0.7)+
+  annotate(&quot;pointrange&quot;, x = 3.5, y = 74000+y_text, ymin = 73500+y_text,
+           ymax = 73500+y_text,colour = &quot;blue&quot;, size = 0.7)+
 #-- FIT  
-  annotate(geom = &quot;text&quot;, x = 5, y = 65000,
+  annotate(geom = &quot;text&quot;, x = 5, y = 67000+y_text,
            label = &quot;Fit logistico&quot;, hjust = 0) +
   annotate(geom = &quot;segment&quot;, x = 2.5,xend = 4,
-           y = 65000,yend=65000) +
+           y = 67000+y_text,yend=67000+y_text) +
 #-- CONF
-  annotate(geom = &quot;text&quot;, x = 5, y = 60000,
+  annotate(geom = &quot;text&quot;, x = 5, y = 60000+y_text,
            label = &quot;Intervallo di confidenza 95%&quot;, hjust = 0) +
   annotate(geom = &quot;segment&quot;, x = 2.5,xend = 3,
-           y = 60000,yend=60000, colour=&quot;red&quot;) +
+           y = 60000+y_text,yend=60000+y_text, colour=&quot;red&quot;) +
   annotate(geom = &quot;segment&quot;, x = 3.5,xend = 4,
-           y = 60000,yend=60000, colour=&quot;red&quot;) +
+           y = 60000+y_text,yend=60000+y_text, colour=&quot;red&quot;) +
+#-- NUOVI CASI
+  annotate(geom = &quot;text&quot;, x = 5, y = 53000+y_text,
+           label = &quot;Nuovi Casi&quot;, hjust = 0) +
+  annotate(geom = &quot;segment&quot;, x = 2.5,xend = 4,
+           y = 53000+y_text,yend=53000+y_text,color=&quot;orange&quot;,size=1.1) +
+  
 #-- Test
-  annotate(geom = &quot;text&quot;, x = 5, y = 55000,
-           label = &quot;Test data&quot;, hjust = 0) +
-  annotate(geom=&quot;rect&quot;,xmin=3, xmax=3.6, ymin=54000 , ymax=56000, color=&quot;red&quot;, fill=&quot;red&quot;) +
-   geom_label( aes( x=40, y=10000, label=&quot;#iorestoacasa&quot;),                 , 
+#  annotate(geom = &quot;text&quot;, x = 5, y = 55000,
+#           label = &quot;Test data&quot;, hjust = 0) +
+#  annotate(geom=&quot;rect&quot;,xmin=3, xmax=3.6, ymin=54000 , ymax=56000, color=&quot;red&quot;, fill=&quot;red&quot;) +
+#-- Restoacasa
+   geom_label( aes( x=50, y=10000, label=&quot;#iorestoacasa&quot;),                  
            color=&quot;black&quot;, 
            size=5 , fontface=&quot;bold&quot; )+ 
+  scale_y_continuous(
+    label = comma_format(big.mark = &quot;.&quot;, decimal.mark = &quot;,&quot;),
+    &quot;Totale Positivi&quot;, 
+    sec.axis = sec_axis(~ . / 10, name = &quot;Nuovi casi&quot;)  ) +
 #-- #iorestoacasa  
     labs(title = &quot;Crescita contagiati Coronavirus Italia &quot;,
        subtitle = &quot;Previsione curva di crescita&quot;,
        caption = &quot;Dati: Protezione Civile&quot;,
        x = &quot;Giorni&quot;,
        y = &quot;Totale Positivi&quot;)</code></pre>
-<p><img src="sigmoid_covid19_italy_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><img src="sigmoid_covid19_italy_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 
 
 

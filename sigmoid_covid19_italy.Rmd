@@ -18,6 +18,7 @@ library(dplyr)
 library(drc)
 library(lubridate)
 library(ggplot2)
+library(scales)
 theme_set(theme_bw())
 
 
@@ -27,9 +28,10 @@ covid_italy_sum <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/
 ```
 
 ```{r}
-x <-  1:50
-nn <- 5
-cov_tot <-  rep(NA,50)
+maxrange <- 60
+x <-  1:maxrange
+nn <- 0   # test
+cov_tot <-  rep(NA,maxrange)
 gg <-  length(covid_italy_sum$totale_casi) 
 cov_tot[1:(gg-nn)]    <- covid_italy_sum$totale_casi[1:(gg-nn)]
 xy <- data.frame(x=x,y=cov_tot)
@@ -42,6 +44,11 @@ model <- drm(y ~ x, fct = L.3(), data = xy[1:(gg-nn),])
 ```
 
 
+```{r}
+summary(model)
+```
+
+
 ```{r,warning=F}
 # prediction
 xy_fit <-   
@@ -50,41 +57,62 @@ xy_fit <-
 ```
 
 
+
+
+
 ```{r}
 # plot fitting
-nomodel <- rep(NA,50)
+nomodel <- rep(NA,maxrange)
 nomodel[(gg-nn+1):gg] <- covid_italy_sum$totale_casi[(gg-nn+1):gg] 
 
-ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
+y_text <- 40000
+
+nuovicasi <- rep(NA,maxrange)
+nuovicasi[1:gg] <- (covid_italy_sum$totale_casi - lag( covid_italy_sum$totale_casi ) )*10
+
+ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
   geom_line() +
   geom_point(colour="blue",aes(y=xy$y)) +
-  geom_point(colour="red",aes(y=nomodel),shape=15,size=2) +
+#  geom_point(colour="red",aes(y=nomodel),shape=15,size=2) +
   geom_line(aes(y = Lower), color = "red", linetype = "dashed")+
   geom_line(aes(y = Upper), color = "red", linetype = "dashed")+
+  geom_line(aes(y = nuovicasi),color = 'orange', alpha = .5) +
+  geom_area(aes(y = nuovicasi),fill = 'orange', alpha = .05) +
 #-- ITALY  
-  annotate(geom = "text", x = 5, y = 70000,
+  annotate(geom = "text", x = 5, y = 74000+y_text,
            label = "Training data", hjust = 0) +
-  annotate("pointrange", x = 3.5, y = 70000, ymin = 69500,
-           ymax = 70500,colour = "blue", size = 0.7)+
+  annotate("pointrange", x = 3.5, y = 74000+y_text, ymin = 73500+y_text,
+           ymax = 73500+y_text,colour = "blue", size = 0.7)+
 #-- FIT  
-  annotate(geom = "text", x = 5, y = 65000,
+  annotate(geom = "text", x = 5, y = 67000+y_text,
            label = "Fit logistico", hjust = 0) +
   annotate(geom = "segment", x = 2.5,xend = 4,
-           y = 65000,yend=65000) +
+           y = 67000+y_text,yend=67000+y_text) +
 #-- CONF
-  annotate(geom = "text", x = 5, y = 60000,
+  annotate(geom = "text", x = 5, y = 60000+y_text,
            label = "Intervallo di confidenza 95%", hjust = 0) +
   annotate(geom = "segment", x = 2.5,xend = 3,
-           y = 60000,yend=60000, colour="red") +
+           y = 60000+y_text,yend=60000+y_text, colour="red") +
   annotate(geom = "segment", x = 3.5,xend = 4,
-           y = 60000,yend=60000, colour="red") +
+           y = 60000+y_text,yend=60000+y_text, colour="red") +
+#-- NUOVI CASI
+  annotate(geom = "text", x = 5, y = 53000+y_text,
+           label = "Nuovi Casi", hjust = 0) +
+  annotate(geom = "segment", x = 2.5,xend = 4,
+           y = 53000+y_text,yend=53000+y_text,color="orange",size=1.1) +
+  
 #-- Test
-  annotate(geom = "text", x = 5, y = 55000,
-           label = "Test data", hjust = 0) +
-  annotate(geom="rect",xmin=3, xmax=3.6, ymin=54000 , ymax=56000, color="red", fill="red") +
-   geom_label( aes( x=40, y=10000, label="#iorestoacasa"),                 , 
+#  annotate(geom = "text", x = 5, y = 55000,
+#           label = "Test data", hjust = 0) +
+#  annotate(geom="rect",xmin=3, xmax=3.6, ymin=54000 , ymax=56000, color="red", fill="red") +
+#-- Restoacasa
+   geom_label( aes( x=50, y=10000, label="#iorestoacasa"),                  
            color="black", 
            size=5 , fontface="bold" )+ 
+  scale_y_continuous(
+    label = comma_format(big.mark = ".", decimal.mark = ","),
+    "Totale Positivi", 
+    sec.axis = sec_axis(~ . / 10, name = "Nuovi casi")  ) +
 #-- #iorestoacasa  
     labs(title = "Crescita contagiati Coronavirus Italia ",
        subtitle = "Previsione curva di crescita",
@@ -93,14 +121,6 @@ ggplot(xy_fit,aes(x=1:50,y=Prediction))  +
        y = "Totale Positivi")
 ```
 
-```{r,eval=F,echo=F}
-covid_italy_sum$totale_casi
-
-```
-
-
-```{r,eval=F,echo=F}
-xy_fit[25,]
-```
+  
 
 
