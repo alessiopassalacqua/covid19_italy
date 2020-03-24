@@ -307,7 +307,7 @@ Analisi
 ### Mappa contagi  
 
 ```{r}
-breaks = c(0, 25, 50, 250,500, 2500, 5000) 
+breaks = c(0, 50, 250,500, 2500, 5000, 7500) 
 map_ita = tm_shape(covid_province) + 
   tm_polygons(col="totale_casi",breaks=breaks,
               popup.vars=c("totale casi:"="totale_casi"))
