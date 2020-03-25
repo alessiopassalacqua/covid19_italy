@@ -73,7 +73,7 @@ nuovicasi[1:gg] <- (covid_italy_sum$totale_casi - lag( covid_italy_sum$totale_ca
 ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
   geom_line() +
   geom_point(colour="blue",aes(y=xy$y)) +
-#  geom_point(colour="red",aes(y=nomodel),shape=15,size=2) +
+  geom_point(colour="red",aes(y=nomodel),shape=15,size=2) +
   geom_line(aes(y = Lower), color = "red", linetype = "dashed")+
   geom_line(aes(y = Upper), color = "red", linetype = "dashed")+
   geom_line(aes(y = nuovicasi),color = 'orange', alpha = .5) +
@@ -100,11 +100,10 @@ ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
            label = "Nuovi Casi", hjust = 0) +
   annotate(geom = "segment", x = 2.5,xend = 4,
            y = 53000+y_text,yend=53000+y_text,color="orange",size=1.1) +
-  
 #-- Test
-#  annotate(geom = "text", x = 5, y = 55000,
-#           label = "Test data", hjust = 0) +
-#  annotate(geom="rect",xmin=3, xmax=3.6, ymin=54000 , ymax=56000, color="red", fill="red") +
+  annotate(geom = "text", x = 5, y = 46000+y_text,
+           label = "Test data", hjust = 0) +
+  annotate(geom="rect",xmin=3, xmax=3.6, ymin=44000+y_text , ymax=47000+y_text, color="red", fill="red") +
 #-- Restoacasa
    geom_label( aes( x=50, y=10000, label="#iorestoacasa"),                  
            color="black", 
@@ -115,9 +114,9 @@ ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
     sec.axis = sec_axis(~ . / 10, name = "Nuovi casi")  ) +
 #-- #iorestoacasa  
     labs(title = "Crescita contagiati Coronavirus Italia ",
-       subtitle = "Previsione curva di crescita",
+       subtitle = paste0("Previsione curva di crescita - Aggiornamento del ", Sys.Date() ),
        caption = "Dati: Protezione Civile",
-       x = "Giorni",
+       x = "Giorni (giorno 1 = 24 Febbraio)",
        y = "Totale Positivi")
 ```
 

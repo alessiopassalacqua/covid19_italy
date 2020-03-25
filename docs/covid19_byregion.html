@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Alessio Passalacqua" />
+
+<meta name="date" content="2020-03-25" />
+
+<title>Coronavirus per gruppi di regione</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Coronavirus per gruppi di regione</h1>
+<h4 class="author">Alessio Passalacqua</h4>
+<h4 class="date">2020-03-25</h4>
+
+</div>
+
+
+<pre class="r"><code>library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(magrittr)
+theme_set(theme_bw())</code></pre>
+<pre class="r"><code>covid_italy &lt;- read.csv(&quot;https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv&quot;)</code></pre>
+<pre class="r"><code>covid_italy %&gt;%
+  glimpse()</code></pre>
+<pre><code>## Observations: 651
+## Variables: 18
+## $ data                        &lt;fct&gt; 2020-02-24T18:00:00, 2020-02-24T18:00:0...
+## $ stato                       &lt;fct&gt; ITA, ITA, ITA, ITA, ITA, ITA, ITA, ITA,...
+## $ codice_regione              &lt;int&gt; 13, 17, 4, 18, 15, 8, 6, 12, 7, 3, 11, ...
+## $ denominazione_regione       &lt;fct&gt; Abruzzo, Basilicata, P.A. Bolzano, Cala...
+## $ lat                         &lt;dbl&gt; 42.35122, 40.63947, 46.49933, 38.90598,...
+## $ long                        &lt;dbl&gt; 13.398438, 15.805148, 11.356624, 16.594...
+## $ ricoverati_con_sintomi      &lt;int&gt; 0, 0, 0, 0, 0, 10, 0, 1, 0, 76, 0, 0, 2...
+## $ terapia_intensiva           &lt;int&gt; 0, 0, 0, 0, 0, 2, 0, 1, 0, 19, 0, 0, 0,...
+## $ totale_ospedalizzati        &lt;int&gt; 0, 0, 0, 0, 0, 12, 0, 2, 0, 95, 0, 0, 2...
+## $ isolamento_domiciliare      &lt;int&gt; 0, 0, 0, 0, 0, 6, 0, 0, 0, 71, 0, 0, 1,...
+## $ totale_attualmente_positivi &lt;int&gt; 0, 0, 0, 0, 0, 18, 0, 2, 0, 166, 0, 0, ...
+## $ nuovi_attualmente_positivi  &lt;int&gt; 0, 0, 0, 0, 0, 18, 0, 2, 0, 166, 0, 0, ...
+## $ dimessi_guariti             &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, ...
+## $ deceduti                    &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, ...
+## $ totale_casi                 &lt;int&gt; 0, 0, 0, 0, 0, 18, 0, 3, 0, 172, 0, 0, ...
+## $ tamponi                     &lt;int&gt; 5, 0, 1, 1, 10, 148, 58, 124, 1, 1463, ...
+## $ note_it                     &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,...
+## $ note_en                     &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,...</code></pre>
+<pre class="r"><code>covid_italy %&lt;&gt;%
+   mutate(data = date(data)) %&gt;%
+   mutate(regione = as.character(denominazione_regione)) %&gt;%
+   select(-denominazione_regione,
+          -stato,
+          -codice_regione,
+          -lat,
+          -long) %&gt;%
+  mutate(regione = ifelse(.$regione == &quot;Trento&quot;,&quot;Trentino-Alto Adige&quot;,.$regione))%&gt;%
+  mutate( regione = ifelse(.$regione == &quot;Bolzano&quot;,&quot;Trentino-Alto Adige&quot;,.$regione)) %&gt;%
+  mutate(regione = ifelse(.$regione == &quot;P.A. Trento&quot;,&quot;Trentino-Alto Adige&quot;,.$regione))%&gt;%
+  mutate( regione = ifelse(.$regione == &quot;P.A. Bolzano&quot;,&quot;Trentino-Alto Adige&quot;,.$regione)) %&gt;%
+  group_by(regione,data) %&gt;%
+  summarize_all(~sum(.)) %&gt;%
+  ungroup(regione) %&gt;%
+  arrange(desc(data),desc(totale_casi)) </code></pre>
+<pre class="r"><code>covid_italy</code></pre>
+<pre class="r"><code>covid_nord_ovest &lt;- 
+  covid_italy %&gt;%
+  filter(regione %in% 
+           c(&quot;Piemonte&quot;, &quot;Valle d&#39;Aosta&quot;, &quot;Liguria&quot;, &quot;Lombardia&quot;)) %&gt;%
+  select(-regione) %&gt;%
+ group_by(data) %&gt;%
+  summarise(totale_nord_ovest = sum(totale_casi)) %&gt;%
+  mutate(nuovi_casi_no = totale_nord_ovest - lag(totale_nord_ovest)) 
+  
+covid_nord_ovest %&gt;%
+  ggplot(aes(data,nuovi_casi_no)) + geom_line()</code></pre>
+<p><img src="covid19_byregion_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>covid_nord_est &lt;- 
+  covid_italy %&gt;%
+  filter(regione %in% 
+           c(&quot;Trentino-Alto Adige&quot;, &quot;Veneto&quot;, &quot;Friuli Venezia Giulia&quot;, &quot;Emilia Romagna&quot;)) %&gt;%
+  select(-regione) %&gt;%
+ group_by(data) %&gt;%
+  summarise(totale_nord_est = sum(totale_casi)) %&gt;%
+  mutate(nuovi_casi_ne = totale_nord_est - lag(totale_nord_est)) 
+  
+covid_nord_est %&gt;%
+  ggplot(aes(data,nuovi_casi_ne)) + geom_line()</code></pre>
+<p><img src="covid19_byregion_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>covid_centro &lt;- 
+  covid_italy %&gt;%
+  filter(regione %in% 
+           c(&quot;Toscana&quot;, &quot;Umbria&quot;, &quot;Marche&quot;, &quot;Lazio&quot;)) %&gt;%
+  select(-regione) %&gt;%
+ group_by(data) %&gt;%
+  summarise(totale_centro = sum(totale_casi)) %&gt;%
+  mutate(nuovi_casi_ce = totale_centro - lag(totale_centro)) 
+  
+covid_centro %&gt;%
+  ggplot(aes(data,nuovi_casi_ce)) + geom_line()</code></pre>
+<p><img src="covid19_byregion_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code>covid_sud_isole &lt;- 
+  covid_italy %&gt;%
+  filter(regione %in% 
+           c(&quot;Abruzzo&quot;, &quot;Molise&quot;, &quot;Campania&quot;, &quot;Puglia&quot;, 
+             &quot;Basilicata&quot;, &quot;Calabria&quot;,&quot;Sicilia&quot;,&quot;Sardegna&quot;)) %&gt;%
+  select(-regione) %&gt;%
+ group_by(data) %&gt;%
+  summarise(totale_sud_isole = sum(totale_casi)) %&gt;%
+  mutate(nuovi_casi_si = totale_sud_isole - lag(totale_sud_isole)) 
+  
+covid_sud_isole %&gt;%
+  ggplot(aes(data,nuovi_casi_si)) + geom_line()</code></pre>
+<p><img src="covid19_byregion_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<pre class="r"><code>covid_byregion &lt;-
+covid_nord_ovest %&gt;%
+  left_join(covid_nord_est) %&gt;%
+  left_join(covid_centro) %&gt;%
+  left_join(covid_sud_isole) %&gt;%
+  select(data,nuovi_casi_no,nuovi_casi_ne,nuovi_casi_si,nuovi_casi_ce)</code></pre>
+<pre class="r"><code>library(tidyr)
+covid_byregion %&gt;%
+  gather(gr,nuovi_casi,-data)  %&gt;%
+  ggplot(aes(x=data,y=nuovi_casi,colour=gr)) + 
+  geom_line(aes(colour=gr))  </code></pre>
+<p><img src="covid19_byregion_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
