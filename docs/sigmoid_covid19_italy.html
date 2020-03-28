@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alessio Passalacqua" />
 
-<meta name="date" content="2020-03-25" />
+<meta name="date" content="2020-03-28" />
 
 <title>Coronavirus Italia: previsione curva di crescita</title>
 
@@ -181,7 +181,7 @@ summary {
 
 <h1 class="title toc-ignore">Coronavirus Italia: previsione curva di crescita</h1>
 <h4 class="author">Alessio Passalacqua</h4>
-<h4 class="date">2020-03-25</h4>
+<h4 class="date">2020-03-28</h4>
 
 </div>
 
@@ -212,15 +212,15 @@ model &lt;- drm(y ~ x, fct = L.3(), data = xy[1:(gg-nn),])</code></pre>
 ## Parameter estimates:
 ## 
 ##                  Estimate  Std. Error t-value   p-value    
-## b:(Intercept) -1.9632e-01  3.1371e-03 -62.581 &lt; 2.2e-16 ***
-## d:(Intercept)  1.1389e+05  2.8808e+03  39.535 &lt; 2.2e-16 ***
-## e:(Intercept)  2.7747e+01  2.7113e-01 102.339 &lt; 2.2e-16 ***
+## b:(Intercept) -1.8777e-01  2.7951e-03 -67.180 &lt; 2.2e-16 ***
+## d:(Intercept)  1.2505e+05  2.3473e+03  53.272 &lt; 2.2e-16 ***
+## e:(Intercept)  2.8721e+01  2.2518e-01 127.547 &lt; 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error:
 ## 
-##  518.3953 (28 degrees of freedom)</code></pre>
+##  644.4212 (31 degrees of freedom)</code></pre>
 <pre class="r"><code># prediction
 xy_fit &lt;-   
   predict(model,xy,interval = &#39;confidence&#39;)  %&gt;%
@@ -237,7 +237,7 @@ nuovicasi[1:gg] &lt;- (covid_italy_sum$totale_casi - lag( covid_italy_sum$totale
 ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
   geom_line() +
   geom_point(colour=&quot;blue&quot;,aes(y=xy$y)) +
-  geom_point(colour=&quot;red&quot;,aes(y=nomodel),shape=15,size=2) +
+#  geom_point(colour=&quot;red&quot;,aes(y=nomodel),shape=15,size=2) +
   geom_line(aes(y = Lower), color = &quot;red&quot;, linetype = &quot;dashed&quot;)+
   geom_line(aes(y = Upper), color = &quot;red&quot;, linetype = &quot;dashed&quot;)+
   geom_line(aes(y = nuovicasi),color = &#39;orange&#39;, alpha = .5) +
@@ -265,9 +265,9 @@ ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
   annotate(geom = &quot;segment&quot;, x = 2.5,xend = 4,
            y = 53000+y_text,yend=53000+y_text,color=&quot;orange&quot;,size=1.1) +
 #-- Test
-  annotate(geom = &quot;text&quot;, x = 5, y = 46000+y_text,
-           label = &quot;Test data&quot;, hjust = 0) +
-  annotate(geom=&quot;rect&quot;,xmin=3, xmax=3.6, ymin=44000+y_text , ymax=47000+y_text, color=&quot;red&quot;, fill=&quot;red&quot;) +
+#  annotate(geom = &quot;text&quot;, x = 5, y = 46000+y_text,
+#           label = &quot;Test data&quot;, hjust = 0) +
+#  annotate(geom=&quot;rect&quot;,xmin=3, xmax=3.6, ymin=44000+y_text , ymax=47000+y_text, color=&quot;red&quot;, fill=&quot;red&quot;) +
 #-- Restoacasa
    geom_label( aes( x=50, y=10000, label=&quot;#iorestoacasa&quot;),                  
            color=&quot;black&quot;, 

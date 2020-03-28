@@ -34,18 +34,20 @@ covid_italy %>%
 ```{r}
 covid_italy %<>%
    mutate(data = date(data)) %>%
-   mutate(regione = as.character(denominazione_regione)) %>%
+   mutate(regione = as.character(denominazione_regione))  %>%
    select(-denominazione_regione,
           -stato,
           -codice_regione,
           -lat,
-          -long) %>%
+          -long,
+          -note_it,
+          -note_en) %>%
   mutate(regione = ifelse(.$regione == "Trento","Trentino-Alto Adige",.$regione))%>%
   mutate( regione = ifelse(.$regione == "Bolzano","Trentino-Alto Adige",.$regione)) %>%
   mutate(regione = ifelse(.$regione == "P.A. Trento","Trentino-Alto Adige",.$regione))%>%
   mutate( regione = ifelse(.$regione == "P.A. Bolzano","Trentino-Alto Adige",.$regione)) %>%
   group_by(regione,data) %>%
-  summarize_all(~sum(.)) %>%
+  summarize_all(~sum(.))  %>%
   ungroup(regione) %>%
   arrange(desc(data),desc(totale_casi)) 
 ```
@@ -125,10 +127,74 @@ covid_nord_ovest %>%
 
 ```{r}
 library(tidyr)
+library(scales)
+library(ggpubr)
+library("RColorBrewer")
+
+text_no <-     paste("Nord Overst: Piemonte, Valle d'Aosta, Liguria, Lombardia")
+text_ne <-     paste("Nord Est: Trentino-Alto Adige, Veneto, Friuli Venezia Giulia, Emilia-Romagna")
+text_centro <- paste("Centro: Toscana, Umbria, Marche, Lazio")
+text_si <-     paste("Sud e Isole: Abruzzo, Molise, Campania, Puglia, Basilicata, Calabria, Sicilia, Sardegna")
+
+covid_byregion_gather <-
 covid_byregion %>%
   gather(gr,nuovi_casi,-data)  %>%
+  mutate(gr = as.factor(gr))
+
+#Create a custom color scale
+library(RColorBrewer)
+myColors <- brewer.pal(4,"Set1")
+names(myColors) <- levels(covid_byregion_gather$gr)
+colScale <- scale_colour_manual(name = "grp",values = myColors)
+
+# "#E41A1C" centro
+# "#377EB8"  nord-est
+# "#4DAF4A" nord-ovest
+# "#984EA3" sud isole
+
+ covid_byregion_gather %>%
   ggplot(aes(x=data,y=nuovi_casi,colour=gr)) + 
-  geom_line(aes(colour=gr))  
+#-- color
+  colScale +
+#--   
+  geom_point(aes(colour=gr),size=1.2, alpha=0.5)  +
+  geom_smooth(se=F) +
+  scale_y_continuous(label = comma_format(big.mark = ".", decimal.mark = ",")  ) +
+   
+#-- Annotate Nord ovest   
+  annotate("text", x = ymd("2020-03-6"), y =4000, label = text_no,size=3)   +
+  geom_label( aes( x=ymd("2020-03-18"), y=2800, label="Nord-Ovest"),                  
+           color="#4DAF4A", 
+           size=5 , fontface="bold" )+  
+#-- Annotate Nord est   
+  annotate("text", x = ymd("2020-03-6"), y =3800, label = text_ne,size=3)   +
+  geom_label( aes( x=ymd("2020-03-20"), y=1400, label="Nord-Est"),                  
+           color="#377EB8", 
+           size=5 , fontface="bold" )+  
+#-- Annotate Centro   
+  annotate("text", x = ymd("2020-03-3"), y =3600, label = text_centro,size=3)   +
+  geom_label( aes( x=ymd("2020-03-21"), y=900, label="Centro"),                  
+           color="#E41A1C", 
+           size=5 , fontface="bold" )+  
+#-- Annotate Sud Isole   
+  annotate("text", x = ymd("2020-03-6"), y =3400, label = text_si,size=3)   +
+  geom_label( aes( x=ymd("2020-03-22"), y=200, label="Sud Isole"),                  
+           color="#984EA3", 
+           size=5 , fontface="bold" )+  
+#-- #iorestoacasa  
+    labs(title = "Crescita nuovi contagiati Coronavirus per gruppi di regione",
+       subtitle = paste0("Aggiornamento del ", Sys.Date()),
+       caption = "Dati: Protezione Civile",
+       x = "",
+       y = "Nuovi Casi") +
+  theme(legend.position = "none") 
   
 ```
+
+
+```{r}
+# http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
+```
+
+
 

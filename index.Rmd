@@ -62,18 +62,20 @@ covid_itpro <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/mast
 ```{r}
 covid_italy %<>%
    mutate(data = date(data)) %>%
-   mutate(regione = as.character(denominazione_regione)) %>%
+   mutate(regione = as.character(denominazione_regione))  %>%
    select(-denominazione_regione,
           -stato,
           -codice_regione,
           -lat,
-          -long) %>%
+          -long,
+          -note_it,
+          -note_en) %>%
   mutate(regione = ifelse(.$regione == "Trento","Trentino-Alto Adige",.$regione))%>%
   mutate( regione = ifelse(.$regione == "Bolzano","Trentino-Alto Adige",.$regione)) %>%
   mutate(regione = ifelse(.$regione == "P.A. Trento","Trentino-Alto Adige",.$regione))%>%
   mutate( regione = ifelse(.$regione == "P.A. Bolzano","Trentino-Alto Adige",.$regione)) %>%
   group_by(regione,data) %>%
-  summarize_all(~sum(.)) %>%
+  summarize_all(~sum(.))  %>%
   ungroup(regione) %>%
   arrange(desc(data),desc(totale_casi)) 
 ```

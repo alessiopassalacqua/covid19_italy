@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alessio Passalacqua" />
 
-<meta name="date" content="2020-03-25" />
+<meta name="date" content="2020-03-28" />
 
 <title>Coronavirus per gruppi di regione</title>
 
@@ -181,7 +181,7 @@ summary {
 
 <h1 class="title toc-ignore">Coronavirus per gruppi di regione</h1>
 <h4 class="author">Alessio Passalacqua</h4>
-<h4 class="date">2020-03-25</h4>
+<h4 class="date">2020-03-28</h4>
 
 </div>
 
@@ -194,7 +194,7 @@ theme_set(theme_bw())</code></pre>
 <pre class="r"><code>covid_italy &lt;- read.csv(&quot;https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv&quot;)</code></pre>
 <pre class="r"><code>covid_italy %&gt;%
   glimpse()</code></pre>
-<pre><code>## Observations: 651
+<pre><code>## Observations: 714
 ## Variables: 18
 ## $ data                        &lt;fct&gt; 2020-02-24T18:00:00, 2020-02-24T18:00:0...
 ## $ stato                       &lt;fct&gt; ITA, ITA, ITA, ITA, ITA, ITA, ITA, ITA,...
@@ -212,22 +212,24 @@ theme_set(theme_bw())</code></pre>
 ## $ deceduti                    &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, ...
 ## $ totale_casi                 &lt;int&gt; 0, 0, 0, 0, 0, 18, 0, 3, 0, 172, 0, 0, ...
 ## $ tamponi                     &lt;int&gt; 5, 0, 1, 1, 10, 148, 58, 124, 1, 1463, ...
-## $ note_it                     &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,...
-## $ note_en                     &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,...</code></pre>
+## $ note_it                     &lt;fct&gt; , , , , , , , , , , , , , , , , , , , ,...
+## $ note_en                     &lt;fct&gt; , , , , , , , , , , , , , , , , , , , ,...</code></pre>
 <pre class="r"><code>covid_italy %&lt;&gt;%
    mutate(data = date(data)) %&gt;%
-   mutate(regione = as.character(denominazione_regione)) %&gt;%
+   mutate(regione = as.character(denominazione_regione))  %&gt;%
    select(-denominazione_regione,
           -stato,
           -codice_regione,
           -lat,
-          -long) %&gt;%
+          -long,
+          -note_it,
+          -note_en) %&gt;%
   mutate(regione = ifelse(.$regione == &quot;Trento&quot;,&quot;Trentino-Alto Adige&quot;,.$regione))%&gt;%
   mutate( regione = ifelse(.$regione == &quot;Bolzano&quot;,&quot;Trentino-Alto Adige&quot;,.$regione)) %&gt;%
   mutate(regione = ifelse(.$regione == &quot;P.A. Trento&quot;,&quot;Trentino-Alto Adige&quot;,.$regione))%&gt;%
   mutate( regione = ifelse(.$regione == &quot;P.A. Bolzano&quot;,&quot;Trentino-Alto Adige&quot;,.$regione)) %&gt;%
   group_by(regione,data) %&gt;%
-  summarize_all(~sum(.)) %&gt;%
+  summarize_all(~sum(.))  %&gt;%
   ungroup(regione) %&gt;%
   arrange(desc(data),desc(totale_casi)) </code></pre>
 <pre class="r"><code>covid_italy</code></pre>
@@ -287,11 +289,69 @@ covid_nord_ovest %&gt;%
   left_join(covid_sud_isole) %&gt;%
   select(data,nuovi_casi_no,nuovi_casi_ne,nuovi_casi_si,nuovi_casi_ce)</code></pre>
 <pre class="r"><code>library(tidyr)
+library(scales)
+library(ggpubr)
+library(&quot;RColorBrewer&quot;)
+
+text_no &lt;-     paste(&quot;Nord Overst: Piemonte, Valle d&#39;Aosta, Liguria, Lombardia&quot;)
+text_ne &lt;-     paste(&quot;Nord Est: Trentino-Alto Adige, Veneto, Friuli Venezia Giulia, Emilia-Romagna&quot;)
+text_centro &lt;- paste(&quot;Centro: Toscana, Umbria, Marche, Lazio&quot;)
+text_si &lt;-     paste(&quot;Sud e Isole: Abruzzo, Molise, Campania, Puglia, Basilicata, Calabria, Sicilia, Sardegna&quot;)
+
+covid_byregion_gather &lt;-
 covid_byregion %&gt;%
   gather(gr,nuovi_casi,-data)  %&gt;%
+  mutate(gr = as.factor(gr))
+
+#Create a custom color scale
+library(RColorBrewer)
+myColors &lt;- brewer.pal(4,&quot;Set1&quot;)
+names(myColors) &lt;- levels(covid_byregion_gather$gr)
+colScale &lt;- scale_colour_manual(name = &quot;grp&quot;,values = myColors)
+
+# &quot;#E41A1C&quot; centro
+# &quot;#377EB8&quot;  nord-est
+# &quot;#4DAF4A&quot; nord-ovest
+# &quot;#984EA3&quot; sud isole
+
+ covid_byregion_gather %&gt;%
   ggplot(aes(x=data,y=nuovi_casi,colour=gr)) + 
-  geom_line(aes(colour=gr))  </code></pre>
+#-- color
+  colScale +
+#--   
+  geom_point(aes(colour=gr),size=1.2, alpha=0.5)  +
+  geom_smooth(se=F) +
+  scale_y_continuous(label = comma_format(big.mark = &quot;.&quot;, decimal.mark = &quot;,&quot;)  ) +
+   
+#-- Annotate Nord ovest   
+  annotate(&quot;text&quot;, x = ymd(&quot;2020-03-6&quot;), y =4000, label = text_no,size=3)   +
+  geom_label( aes( x=ymd(&quot;2020-03-18&quot;), y=2800, label=&quot;Nord-Ovest&quot;),                  
+           color=&quot;#4DAF4A&quot;, 
+           size=5 , fontface=&quot;bold&quot; )+  
+#-- Annotate Nord est   
+  annotate(&quot;text&quot;, x = ymd(&quot;2020-03-6&quot;), y =3800, label = text_ne,size=3)   +
+  geom_label( aes( x=ymd(&quot;2020-03-20&quot;), y=1400, label=&quot;Nord-Est&quot;),                  
+           color=&quot;#377EB8&quot;, 
+           size=5 , fontface=&quot;bold&quot; )+  
+#-- Annotate Centro   
+  annotate(&quot;text&quot;, x = ymd(&quot;2020-03-3&quot;), y =3600, label = text_centro,size=3)   +
+  geom_label( aes( x=ymd(&quot;2020-03-21&quot;), y=900, label=&quot;Centro&quot;),                  
+           color=&quot;#E41A1C&quot;, 
+           size=5 , fontface=&quot;bold&quot; )+  
+#-- Annotate Sud Isole   
+  annotate(&quot;text&quot;, x = ymd(&quot;2020-03-6&quot;), y =3400, label = text_si,size=3)   +
+  geom_label( aes( x=ymd(&quot;2020-03-22&quot;), y=200, label=&quot;Sud Isole&quot;),                  
+           color=&quot;#984EA3&quot;, 
+           size=5 , fontface=&quot;bold&quot; )+  
+#-- #iorestoacasa  
+    labs(title = &quot;Crescita nuovi contagiati Coronavirus per gruppi di regione&quot;,
+       subtitle = paste0(&quot;Aggiornamento del &quot;, Sys.Date()),
+       caption = &quot;Dati: Protezione Civile&quot;,
+       x = &quot;&quot;,
+       y = &quot;Nuovi Casi&quot;) +
+  theme(legend.position = &quot;none&quot;) </code></pre>
 <p><img src="covid19_byregion_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<pre class="r"><code># http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/</code></pre>
 
 
 

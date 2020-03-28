@@ -71,7 +71,9 @@ covid_italy %<>%
           -stato,
           -codice_regione,
           -lat,
-          -long) %>%
+          -long,
+          -note_it,
+          -note_en) %>%
    mutate(regione = ifelse(.$regione == "Trento","Trentino-Alto Adige",.$regione))%>%
   mutate( regione = ifelse(.$regione == "Bolzano","Trentino-Alto Adige",.$regione)) %>%
   group_by(regione,data) %>%
