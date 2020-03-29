@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alessio Passalacqua" />
 
-<meta name="date" content="2020-03-28" />
+<meta name="date" content="2020-03-29" />
 
 <title>Coronavirus per gruppi di regione</title>
 
@@ -181,7 +181,7 @@ summary {
 
 <h1 class="title toc-ignore">Coronavirus per gruppi di regione</h1>
 <h4 class="author">Alessio Passalacqua</h4>
-<h4 class="date">2020-03-28</h4>
+<h4 class="date">2020-03-29</h4>
 
 </div>
 
@@ -194,7 +194,7 @@ theme_set(theme_bw())</code></pre>
 <pre class="r"><code>covid_italy &lt;- read.csv(&quot;https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv&quot;)</code></pre>
 <pre class="r"><code>covid_italy %&gt;%
   glimpse()</code></pre>
-<pre><code>## Observations: 714
+<pre><code>## Observations: 735
 ## Variables: 18
 ## $ data                        &lt;fct&gt; 2020-02-24T18:00:00, 2020-02-24T18:00:0...
 ## $ stato                       &lt;fct&gt; ITA, ITA, ITA, ITA, ITA, ITA, ITA, ITA,...
@@ -340,11 +340,11 @@ colScale &lt;- scale_colour_manual(name = &quot;grp&quot;,values = myColors)
            size=5 , fontface=&quot;bold&quot; )+  
 #-- Annotate Sud Isole   
   annotate(&quot;text&quot;, x = ymd(&quot;2020-03-6&quot;), y =3400, label = text_si,size=3)   +
-  geom_label( aes( x=ymd(&quot;2020-03-22&quot;), y=200, label=&quot;Sud Isole&quot;),                  
+  geom_label( aes( x=ymd(&quot;2020-03-22&quot;), y=200, label=&quot;Sud ed Isole&quot;),                  
            color=&quot;#984EA3&quot;, 
            size=5 , fontface=&quot;bold&quot; )+  
 #-- #iorestoacasa  
-    labs(title = &quot;Crescita nuovi contagiati Coronavirus per gruppi di regione&quot;,
+    labs(title = &quot;Crescita nuovi contagiati Coronavirus per zone d&#39;Italia&quot;,
        subtitle = paste0(&quot;Aggiornamento del &quot;, Sys.Date()),
        caption = &quot;Dati: Protezione Civile&quot;,
        x = &quot;&quot;,

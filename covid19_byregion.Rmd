@@ -178,11 +178,11 @@ colScale <- scale_colour_manual(name = "grp",values = myColors)
            size=5 , fontface="bold" )+  
 #-- Annotate Sud Isole   
   annotate("text", x = ymd("2020-03-6"), y =3400, label = text_si,size=3)   +
-  geom_label( aes( x=ymd("2020-03-22"), y=200, label="Sud Isole"),                  
+  geom_label( aes( x=ymd("2020-03-22"), y=200, label="Sud ed Isole"),                  
            color="#984EA3", 
            size=5 , fontface="bold" )+  
 #-- #iorestoacasa  
-    labs(title = "Crescita nuovi contagiati Coronavirus per gruppi di regione",
+    labs(title = "Crescita nuovi contagiati Coronavirus per zone d'Italia",
        subtitle = paste0("Aggiornamento del ", Sys.Date()),
        caption = "Dati: Protezione Civile",
        x = "",
