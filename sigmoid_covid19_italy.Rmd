@@ -28,7 +28,7 @@ covid_italy_sum <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/
 ```
 
 ```{r}
-maxrange <- 60
+maxrange <- 50
 x <-  1:maxrange
 nn <- 0   # test
 cov_tot <-  rep(NA,maxrange)
@@ -105,7 +105,7 @@ ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
 #           label = "Test data", hjust = 0) +
 #  annotate(geom="rect",xmin=3, xmax=3.6, ymin=44000+y_text , ymax=47000+y_text, color="red", fill="red") +
 #-- Restoacasa
-   geom_label( aes( x=50, y=10000, label="#iorestoacasa"),                  
+   geom_label( aes( x=42, y=10000, label="#iorestoacasa"),                  
            color="black", 
            size=5 , fontface="bold" )+ 
   scale_y_continuous(

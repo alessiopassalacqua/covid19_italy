@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alessio Passalacqua" />
 
-<meta name="date" content="2020-03-30" />
+<meta name="date" content="2020-03-31" />
 
 <title>Coronavirus Italia: previsione curva di crescita</title>
 
@@ -181,7 +181,7 @@ summary {
 
 <h1 class="title toc-ignore">Coronavirus Italia: previsione curva di crescita</h1>
 <h4 class="author">Alessio Passalacqua</h4>
-<h4 class="date">2020-03-30</h4>
+<h4 class="date">2020-03-31</h4>
 
 </div>
 
@@ -196,7 +196,7 @@ theme_set(theme_bw())
 
 # get the data
 covid_italy_sum &lt;- read.csv(&quot;https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv&quot;)</code></pre>
-<pre class="r"><code>maxrange &lt;- 60
+<pre class="r"><code>maxrange &lt;- 50
 x &lt;-  1:maxrange
 nn &lt;- 0   # test
 cov_tot &lt;-  rep(NA,maxrange)
@@ -212,15 +212,15 @@ model &lt;- drm(y ~ x, fct = L.3(), data = xy[1:(gg-nn),])</code></pre>
 ## Parameter estimates:
 ## 
 ##                  Estimate  Std. Error t-value   p-value    
-## b:(Intercept) -1.8389e-01  2.4719e-03 -74.393 &lt; 2.2e-16 ***
-## d:(Intercept)  1.2986e+05  1.8675e+03  69.537 &lt; 2.2e-16 ***
-## e:(Intercept)  2.9147e+01  1.8510e-01 157.462 &lt; 2.2e-16 ***
+## b:(Intercept) -1.8313e-01  2.2641e-03 -80.882 &lt; 2.2e-16 ***
+## d:(Intercept)  1.3072e+05  1.5708e+03  83.222 &lt; 2.2e-16 ***
+## e:(Intercept)  2.9225e+01  1.5992e-01 182.746 &lt; 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error:
 ## 
-##  692.0223 (33 degrees of freedom)</code></pre>
+##  688.5596 (34 degrees of freedom)</code></pre>
 <pre class="r"><code># prediction
 xy_fit &lt;-   
   predict(model,xy,interval = &#39;confidence&#39;)  %&gt;%
@@ -269,7 +269,7 @@ ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
 #           label = &quot;Test data&quot;, hjust = 0) +
 #  annotate(geom=&quot;rect&quot;,xmin=3, xmax=3.6, ymin=44000+y_text , ymax=47000+y_text, color=&quot;red&quot;, fill=&quot;red&quot;) +
 #-- Restoacasa
-   geom_label( aes( x=50, y=10000, label=&quot;#iorestoacasa&quot;),                  
+   geom_label( aes( x=42, y=10000, label=&quot;#iorestoacasa&quot;),                  
            color=&quot;black&quot;, 
            size=5 , fontface=&quot;bold&quot; )+ 
   scale_y_continuous(

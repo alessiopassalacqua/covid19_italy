@@ -75,7 +75,7 @@ covid_nord_ovest %>%
 covid_nord_est <- 
   covid_italy %>%
   filter(regione %in% 
-           c("Trentino-Alto Adige", "Veneto", "Friuli Venezia Giulia", "Emilia Romagna")) %>%
+           c("Trentino-Alto Adige", "Veneto", "Friuli Venezia Giulia", "Emilia-Romagna")) %>%
   select(-regione) %>%
  group_by(data) %>%
   summarise(totale_nord_est = sum(totale_casi)) %>%
@@ -177,8 +177,8 @@ colScale <- scale_colour_manual(name = "grp",values = myColors)
            color="#E41A1C", 
            size=5 , fontface="bold" )+  
 #-- Annotate Sud Isole   
-  annotate("text", x = ymd("2020-03-6"), y =3400, label = text_si,size=3)   +
-  geom_label( aes( x=ymd("2020-03-22"), y=200, label="Sud ed Isole"),                  
+  annotate("text", x = ymd("2020-03-8"), y =3400, label = text_si,size=3)   +
+  geom_label( aes( x=ymd("2020-03-23"), y=200, label="Sud ed Isole"),                  
            color="#984EA3", 
            size=5 , fontface="bold" )+  
 #-- #iorestoacasa  
@@ -192,7 +192,7 @@ colScale <- scale_colour_manual(name = "grp",values = myColors)
 ```
 
 
-```{r}
+```{r,echo=F}
 # http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
 ```
 

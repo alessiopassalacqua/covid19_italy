@@ -101,7 +101,7 @@ today <- max(covid_italy$data)
 covid_italy_map <- 
   covid_italy %>%
   filter(data == today) %>%
-  select("regione","totale_attualmente_positivi")
+  select("regione","totale_positivi")
 ```
 
 
@@ -160,13 +160,13 @@ valueBox(value = paste(tot, "", " (+",
 pos <- 
   covid_italy_sum %>%
   filter(data == today) %>%
-  select(totale_attualmente_positivi) %>%
+  select(totale_positivi) %>%
   pull
   
 pos_1 <- 
   covid_italy_sum %>%
   filter(data == today -1) %>%
-  select(totale_attualmente_positivi) %>%
+  select(totale_positivi) %>%
   pull
 
 
@@ -246,9 +246,9 @@ highchart(type = "map") %>%
   hc_add_series_map(map = map_ita, 
                     df = covid_italy_map, 
                     joinBy = c("name","regione"), 
-                    value = "totale_attualmente_positivi",
+                    value = "totale_positivi",
                     name="Totale Positivi") %>%
-hc_colorAxis(stops= stops,min=min(covid_italy_map$totale_attualmente_positivi)) %>%
+hc_colorAxis(stops= stops,min=min(covid_italy_map$totale_positivi)) %>%
 hc_legend(valueDecimals = 0, valueSuffix = "%") %>%
   hc_mapNavigation(enabled = TRUE) %>%
   hc_add_theme(thm)
@@ -261,7 +261,7 @@ hc_legend(valueDecimals = 0, valueSuffix = "%") %>%
 ```{r}
 
 
-positivi <- xts(covid_italy_sum$totale_attualmente_positivi, covid_italy_sum$data)
+positivi <- xts(covid_italy_sum$totale_positivi, covid_italy_sum$data)
 
 deceduti <- xts(covid_italy_sum$deceduti, covid_italy_sum$data)
 
