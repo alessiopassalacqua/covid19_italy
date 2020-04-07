@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alessio Passalacqua" />
 
-<meta name="date" content="2020-04-06" />
+<meta name="date" content="2020-04-07" />
 
 <title>Coronavirus Italia: previsione curva di crescita</title>
 
@@ -181,7 +181,7 @@ summary {
 
 <h1 class="title toc-ignore">Coronavirus Italia: previsione curva di crescita</h1>
 <h4 class="author">Alessio Passalacqua</h4>
-<h4 class="date">2020-04-06</h4>
+<h4 class="date">2020-04-07</h4>
 
 </div>
 
@@ -212,15 +212,15 @@ model &lt;- drm(y ~ x, fct = L.3(), data = xy[1:(gg-nn),])</code></pre>
 ## Parameter estimates:
 ## 
 ##                  Estimate  Std. Error t-value   p-value    
-## b:(Intercept) -1.6781e-01  2.7467e-03 -61.094 &lt; 2.2e-16 ***
-## d:(Intercept)  1.4575e+05  1.6792e+03  86.798 &lt; 2.2e-16 ***
-## e:(Intercept)  3.0674e+01  1.8711e-01 163.931 &lt; 2.2e-16 ***
+## b:(Intercept) -1.6560e-01  2.7369e-03 -60.505 &lt; 2.2e-16 ***
+## d:(Intercept)  1.4785e+05  1.6418e+03  90.051 &lt; 2.2e-16 ***
+## e:(Intercept)  3.0884e+01  1.8601e-01 166.029 &lt; 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error:
 ## 
-##  1323.782 (40 degrees of freedom)</code></pre>
+##  1408.059 (41 degrees of freedom)</code></pre>
 <pre class="r"><code># prediction
 xy_fit &lt;-   
   predict(model,xy,interval = &#39;confidence&#39;)  %&gt;%
