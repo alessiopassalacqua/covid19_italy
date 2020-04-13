@@ -1,0 +1,120 @@
+---
+title: "Coronavirus Italia: previsione curva di crescita"
+author: "Alessio Passalacqua"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: cosmo
+    toc_float: true
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(drc)
+library(lubridate)
+library(ggplot2)
+library(scales)
+theme_set(theme_bw())
+
+
+# get the data
+covid_italy_sum <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv")
+
+```
+
+```{r}
+maxrange <- 50
+x <-  1:maxrange
+nn <- 0   # test
+cov_tot <-  rep(NA,maxrange)
+gg <-  length(covid_italy_sum$totale_casi) 
+cov_tot[1:(gg-nn)]    <- covid_italy_sum$totale_casi[1:(gg-nn)]
+xy <- data.frame(x=x,y=cov_tot)
+```
+
+
+```{r}
+# fitting logistico
+model <- drm(y ~ x, fct = L.3(), data = xy[1:(gg-nn),])
+```
+
+
+```{r}
+summary(model)
+```
+
+
+```{r,warning=F}
+# prediction
+xy_fit <-   
+  predict(model,xy,interval = 'confidence')  %>%
+  as.data.frame()
+```
+
+
+
+
+
+```{r}
+# plot fitting
+nomodel <- rep(NA,maxrange)
+nomodel[(gg-nn+1):gg] <- covid_italy_sum$totale_casi[(gg-nn+1):gg] 
+
+y_text <- 40000
+
+nuovicasi <- rep(NA,maxrange)
+nuovicasi[1:gg] <- (covid_italy_sum$totale_casi - lag( covid_italy_sum$totale_casi ) )*10
+
+ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
+  geom_line() +
+  geom_line(colour="blue",aes(y=xy$y)) +
+  geom_histogram(aes(y = nuovicasi),
+                  alpha = .3,stat="identity",fill="orange") +
+  geom_smooth(aes(y = nuovicasi),se=F,color="orange") +
+#  geom_area(aes(y = nuovicasi),fill = 'orange', alpha = .05) +
+#-- ITALY  
+  annotate(geom = "text", x = 5, y = 74000+y_text,
+           label = "Casi Totali", hjust = 0) +
+  annotate("pointrange", x = 3.5, y = 74000+y_text, ymin = 73500+y_text,
+           ymax = 73500+y_text,colour = "blue", size = 0.7)+
+#-- FIT  
+  annotate(geom = "text", x = 5, y = 67000+y_text,
+           label = "Fit logistico", hjust = 0) +
+  annotate(geom = "segment", x = 2.5,xend = 4,
+           y = 67000+y_text,yend=67000+y_text) +
+#-- CONF
+  annotate(geom = "text", x = 5, y = 60000+y_text,
+           label = "Intervallo di confidenza 95%", hjust = 0) +
+  annotate(geom = "segment", x = 2.5,xend = 3,
+           y = 60000+y_text,yend=60000+y_text, colour="red") +
+  annotate(geom = "segment", x = 3.5,xend = 4,
+           y = 60000+y_text,yend=60000+y_text, colour="red") +
+#-- NUOVI CASI
+  annotate(geom = "text", x = 5, y = 53000+y_text,
+           label = "Nuovi Casi", hjust = 0) +
+  annotate(geom = "segment", x = 2.5,xend = 4,
+           y = 53000+y_text,yend=53000+y_text,color="orange",size=1.1) +
+#-- Restoacasa
+   geom_label( aes( x=42, y=10000, label="#iorestoacasa"),                  
+           color="black", 
+           size=5 , fontface="bold" )+ 
+  scale_y_continuous(
+    label = comma_format(big.mark = ".", decimal.mark = ","),
+    "Totale Positivi", 
+    sec.axis = sec_axis(~ . / 10, name = "Nuovi casi")  ) +
+#-- #iorestoacasa  
+    labs(title = "Crescita contagiati Coronavirus Italia ",
+       subtitle = paste0("Previsione curva di crescita - Aggiornamento del ", Sys.Date() ),
+       caption = "Dati: Protezione Civile",
+       x = "Giorni (giorno 1 = 24 Febbraio)",
+       y = "Totale Positivi")
+```
+
+  
+
+

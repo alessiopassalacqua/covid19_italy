@@ -11,7 +11,7 @@ data("coronavirus")
 
 y <-
 coronavirus %>%
-  filter(Country.Region == "Mainland China") %>%
+  filter(Country.Region == "China") %>%
   filter(type =="confirmed") %>%
   group_by(date,type) %>%
   summarise(cases = sum(cases)) %>%
@@ -44,8 +44,8 @@ library(grid)
 ggplot(xy,aes(x=x,y=y)) +
   geom_point() +
   geom_line(aes(y=fit)) +
-  geom_point(colour="orange",aes(y=italy)) +
-  annotation_custom(grob) +
+  geom_point(colour="orange",aes(y=italy)) #+
+#  annotation_custom(grob) +
   annotate(geom = "text", x =  5, y = 70000,
            label = "Cina", hjust = 0) +
   annotate("pointrange", x = 3.5, y = 70000, ymin = 69500,

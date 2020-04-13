@@ -1,5 +1,5 @@
 ---
-title: "Coronavirus Italia: previsione curva di crescita"
+title: "Coronavirus Italia: curva di crescita"
 author: "Alessio Passalacqua"
 date: "`r Sys.Date()`"
 output: 
@@ -28,98 +28,77 @@ covid_italy_sum <- read.csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/
 ```
 
 ```{r}
-maxrange <- 50
-x <-  1:maxrange
-nn <- 0   # test
-cov_tot <-  rep(NA,maxrange)
 gg <-  length(covid_italy_sum$totale_casi) 
-cov_tot[1:(gg-nn)]    <- covid_italy_sum$totale_casi[1:(gg-nn)]
-xy <- data.frame(x=x,y=cov_tot)
+cov_tot    <- covid_italy_sum$totale_casi
+xdata <- date(ymd_hms(covid_italy_sum$data))
+xy <- data.frame(y=cov_tot,xdata=xdata)
 ```
-
 
 ```{r}
-# fitting logistico
-model <- drm(y ~ x, fct = L.3(), data = xy[1:(gg-nn),])
-```
-
-
-```{r}
-summary(model)
-```
-
-
-```{r,warning=F}
-# prediction
-xy_fit <-   
-  predict(model,xy,interval = 'confidence')  %>%
-  as.data.frame()
+nuovicasi <- (covid_italy_sum$totale_casi - lag( covid_italy_sum$totale_casi ) )*10
+xy$nuovicasi <- nuovicasi 
 ```
 
 
 
+```{r,message=F,warning=F}
+# DPCM LABEL
+DPCM_date <- as.Date(rep(NA,dim(xy)[1]))
+DPCM_text <- rep(NA,dim(xy)[1])
+DPCM_y <- rep(NA,dim(xy)[1])
+
+DPCM_date[1:7] <- ymd(c("2020-02-25",
+              "2020-03-01",
+              "2020-03-04",
+              "2020-03-09",
+              "2020-03-11",
+              "2020-03-22",
+              "2020-04-01")) -1
+DPCM_text[1:7] <- c(
+"D.P.C.M. 23/02",
+"D.P.C.M. 01/03",
+"D.P.C.M. 04/03",
+"D.P.C.M. 08/03",
+"D.P.C.M. 11/03",
+"D.P.C.M. 22/03",
+"D.P.C.M. 01/04")
+
+DPCM_y[1:7] <- xy[xy$xdata %in% DPCM_date,"y"] + c(32000,35000,37000,40000,40000,40000,30000)
+```
 
 
-```{r}
-# plot fitting
-nomodel <- rep(NA,maxrange)
-nomodel[(gg-nn+1):gg] <- covid_italy_sum$totale_casi[(gg-nn+1):gg] 
-
-y_text <- 40000
-
-nuovicasi <- rep(NA,maxrange)
-nuovicasi[1:gg] <- (covid_italy_sum$totale_casi - lag( covid_italy_sum$totale_casi ) )*10
-
-ggplot(xy_fit,aes(x=1:maxrange,y=Prediction))  +
-  geom_line() +
-  geom_point(colour="blue",aes(y=xy$y)) +
-#  geom_point(colour="red",aes(y=nomodel),shape=15,size=2) +
-  geom_line(aes(y = Lower), color = "red", linetype = "dashed")+
-  geom_line(aes(y = Upper), color = "red", linetype = "dashed")+
-  geom_line(aes(y = nuovicasi),color = 'orange', alpha = .5) +
-  geom_area(aes(y = nuovicasi),fill = 'orange', alpha = .05) +
-#-- ITALY  
-  annotate(geom = "text", x = 5, y = 74000+y_text,
-           label = "Training data", hjust = 0) +
-  annotate("pointrange", x = 3.5, y = 74000+y_text, ymin = 73500+y_text,
-           ymax = 73500+y_text,colour = "blue", size = 0.7)+
-#-- FIT  
-  annotate(geom = "text", x = 5, y = 67000+y_text,
-           label = "Fit logistico", hjust = 0) +
-  annotate(geom = "segment", x = 2.5,xend = 4,
-           y = 67000+y_text,yend=67000+y_text) +
-#-- CONF
-  annotate(geom = "text", x = 5, y = 60000+y_text,
-           label = "Intervallo di confidenza 95%", hjust = 0) +
-  annotate(geom = "segment", x = 2.5,xend = 3,
-           y = 60000+y_text,yend=60000+y_text, colour="red") +
-  annotate(geom = "segment", x = 3.5,xend = 4,
-           y = 60000+y_text,yend=60000+y_text, colour="red") +
-#-- NUOVI CASI
-  annotate(geom = "text", x = 5, y = 53000+y_text,
-           label = "Nuovi Casi", hjust = 0) +
-  annotate(geom = "segment", x = 2.5,xend = 4,
-           y = 53000+y_text,yend=53000+y_text,color="orange",size=1.1) +
-#-- Test
-#  annotate(geom = "text", x = 5, y = 46000+y_text,
-#           label = "Test data", hjust = 0) +
-#  annotate(geom="rect",xmin=3, xmax=3.6, ymin=44000+y_text , ymax=47000+y_text, color="red", fill="red") +
-#-- Restoacasa
-   geom_label( aes( x=42, y=10000, label="#iorestoacasa"),                  
-           color="black", 
-           size=5 , fontface="bold" )+ 
+```{r,message=F,warning=F}
+# PLOT
+ggplot(xy,aes(x=xdata,y=y))  +
+  geom_line(color="dodgerblue",size=1.2) +
+  geom_histogram(aes(y = nuovicasi),
+                  alpha = .3,stat="identity",fill="orange") +
+  geom_smooth(aes(y = nuovicasi),se=F,color="orange") +
+  geom_text( aes( x=DPCM_date, y=DPCM_y, label=DPCM_text),       
+           color="darkgrey", 
+           size=2.8 , angle=90) +
+  geom_vline(xintercept = (DPCM_date+1 ),
+             color="grey",linetype="longdash")+
+  geom_text( aes( x=as.Date("2020-04-07"), 
+                    y=110000, label="Positivi Totali"),       
+           color="dodgerblue", size=3.8) +
+  geom_text( aes( x=as.Date("2020-04-09"), 
+                    y=60000, label="Nuovi Positivi"),       
+           color="orange", 
+           size=3.8) +
+  #-- labs
   scale_y_continuous(
     label = comma_format(big.mark = ".", decimal.mark = ","),
     "Totale Positivi", 
-    sec.axis = sec_axis(~ . / 10, name = "Nuovi casi")  ) +
-#-- #iorestoacasa  
+    sec.axis = sec_axis(~ . / 10, name = "Nuovi Positivi")  ) +
     labs(title = "Crescita contagiati Coronavirus Italia ",
-       subtitle = paste0("Previsione curva di crescita - Aggiornamento del ", Sys.Date() ),
+       subtitle = paste0("Curva di crescita - Aggiornamento del ", Sys.Date() ),
        caption = "Dati: Protezione Civile",
        x = "Giorni (giorno 1 = 24 Febbraio)",
        y = "Totale Positivi")
-```
-
   
 
 
+```
+
+  
